@@ -1,0 +1,2205 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Livia Lobato · Painel de Aulas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ───────── RESET & VARIABLES ───────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #F7F4EF;
+  --surface: #FFFFFF;
+  --surface2: #F0EDE6;
+  --border: #E2DDD5;
+  --border2: #D0C9BF;
+  --text: #1A1714;
+  --text2: #6B6560;
+  --text3: #9E9890;
+  --accent: #C17D3C;
+  --accent2: #E8A85A;
+  --accent-bg: #FDF3E7;
+  --green: #3A7D5A;
+  --green-bg: #EBF5EE;
+  --red: #B84040;
+  --red-bg: #FAEAEA;
+  --yellow: #9A7020;
+  --yellow-bg: #FDF5E0;
+  --blue: #2E5FA3;
+  --blue-bg: #EBF0FA;
+  --purple: #6B4FA0;
+  --purple-bg: #F2EEFA;
+  --radius: 12px;
+  --radius-sm: 8px;
+  --shadow: 0 2px 12px rgba(0,0,0,.06);
+  --shadow-md: 0 4px 24px rgba(0,0,0,.10);
+  --font-display: 'DM Serif Display', Georgia, serif;
+  --font-body: 'DM Sans', system-ui, sans-serif;
+}
+
+html { font-size: 15px; }
+body {
+  font-family: var(--font-body);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  line-height: 1.5;
+}
+
+/* ───────── LOGIN ───────── */
+#loginScreen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--text);
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  flex-direction: column;
+  gap: 0;
+}
+
+.login-card {
+  background: var(--surface);
+  border-radius: 20px;
+  padding: 3rem 2.5rem;
+  width: min(400px, 90vw);
+  box-shadow: 0 24px 64px rgba(0,0,0,.3);
+  text-align: center;
+}
+
+.login-logo {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  color: var(--text);
+  margin-bottom: .25rem;
+}
+
+.login-sub {
+  font-size: .8rem;
+  color: var(--text3);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  margin-bottom: 2rem;
+}
+
+.login-field {
+  display: flex;
+  flex-direction: column;
+  gap: .4rem;
+  margin-bottom: 1rem;
+  text-align: left;
+}
+
+.login-field label {
+  font-size: .75rem;
+  font-weight: 600;
+  color: var(--text2);
+  letter-spacing: .05em;
+  text-transform: uppercase;
+}
+
+.login-field input {
+  padding: .75rem 1rem;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: .95rem;
+  font-family: var(--font-body);
+  background: var(--bg);
+  color: var(--text);
+  outline: none;
+  transition: border-color .2s;
+}
+
+.login-field input:focus { border-color: var(--accent); }
+
+.login-err {
+  font-size: .8rem;
+  color: var(--red);
+  margin-bottom: .75rem;
+  min-height: 1.2rem;
+}
+
+.btn-login {
+  width: 100%;
+  padding: .85rem;
+  background: var(--text);
+  color: white;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-size: .95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .2s, transform .1s;
+  letter-spacing: .02em;
+}
+
+.btn-login:hover { background: #333; }
+.btn-login:active { transform: scale(.98); }
+
+/* ───────── APP SHELL ───────── */
+#app { display: none; min-height: 100vh; }
+#app.visible { display: block; }
+
+/* ───────── SIDEBAR ───────── */
+.layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.sidebar {
+  width: 220px;
+  flex-shrink: 0;
+  background: var(--text);
+  padding: 1.5rem 0;
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  z-index: 100;
+  transition: transform .25s;
+}
+
+.sidebar-brand {
+  padding: 0 1.5rem 1.5rem;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+  margin-bottom: 1.25rem;
+}
+
+.sidebar-brand-name {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  color: white;
+  line-height: 1.2;
+}
+
+.sidebar-brand-sub {
+  font-size: .7rem;
+  color: rgba(255,255,255,.4);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  margin-top: .2rem;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  padding: .65rem 1.5rem;
+  color: rgba(255,255,255,.55);
+  font-size: .85rem;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+  transition: color .15s, background .15s;
+  border-radius: 0;
+  letter-spacing: .01em;
+}
+
+.nav-item:hover { color: rgba(255,255,255,.85); background: rgba(255,255,255,.05); }
+.nav-item.active { color: white; background: rgba(255,255,255,.12); }
+
+.nav-item svg { width: 16px; height: 16px; opacity: .8; flex-shrink: 0; }
+.nav-item.active svg { opacity: 1; }
+
+.nav-section-label {
+  padding: 1rem 1.5rem .35rem;
+  font-size: .65rem;
+  font-weight: 600;
+  color: rgba(255,255,255,.25);
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+
+.sidebar-footer {
+  margin-top: auto;
+  padding: 1.25rem 1.5rem 0;
+  border-top: 1px solid rgba(255,255,255,.08);
+}
+
+.btn-logout {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  font-size: .8rem;
+  color: rgba(255,255,255,.35);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: .5rem 0;
+  font-family: var(--font-body);
+  transition: color .15s;
+}
+.btn-logout:hover { color: rgba(255,255,255,.65); }
+
+/* ───────── MAIN CONTENT ───────── */
+.main {
+  margin-left: 220px;
+  flex: 1;
+  padding: 2rem 2rem 3rem;
+  max-width: 1200px;
+}
+
+.page { display: none; }
+.page.active { display: block; }
+
+.page-header {
+  margin-bottom: 1.75rem;
+}
+
+.page-title {
+  font-family: var(--font-display);
+  font-size: 1.8rem;
+  color: var(--text);
+  line-height: 1.2;
+}
+
+.page-subtitle {
+  font-size: .85rem;
+  color: var(--text3);
+  margin-top: .25rem;
+}
+
+/* ───────── TOPBAR (mobile) ───────── */
+.topbar {
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  background: var(--text);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.topbar-brand {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  color: white;
+}
+
+.btn-menu {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: .25rem;
+  color: white;
+}
+
+/* ───────── METRICS ───────── */
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: .75rem;
+  margin-bottom: 1.5rem;
+}
+
+.metric-card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 1.1rem 1.25rem;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+}
+
+.metric-label {
+  font-size: .7rem;
+  font-weight: 600;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: .07em;
+  margin-bottom: .3rem;
+}
+
+.metric-value {
+  font-family: var(--font-display);
+  font-size: 1.9rem;
+  color: var(--text);
+  line-height: 1;
+}
+
+.metric-sub {
+  font-size: .72rem;
+  color: var(--text3);
+  margin-top: .2rem;
+}
+
+/* ───────── CARD ───────── */
+.card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  padding: 1.25rem;
+  margin-bottom: 1rem;
+}
+
+.card-title {
+  font-size: .8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .07em;
+  color: var(--text3);
+  margin-bottom: 1rem;
+}
+
+/* ───────── AGENDA GRID ───────── */
+.week-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: .5rem;
+}
+
+.day-col {
+  background: var(--surface2);
+  border-radius: var(--radius-sm);
+  padding: .75rem .6rem;
+  min-height: 100px;
+}
+
+.day-name {
+  font-size: .65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--text3);
+  margin-bottom: .6rem;
+}
+
+.agenda-slot {
+  border-radius: 6px;
+  padding: .4rem .5rem;
+  margin-bottom: .35rem;
+  font-size: .72rem;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+/* ───────── STUDENT GRID ───────── */
+.student-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: .75rem;
+}
+
+.student-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.1rem;
+  cursor: pointer;
+  transition: border-color .15s, box-shadow .15s, transform .1s;
+  position: relative;
+  box-shadow: var(--shadow);
+}
+
+.student-card:hover {
+  border-color: var(--border2);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+}
+
+.student-card.open {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-bg);
+}
+
+.student-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: .8rem;
+  margin-bottom: .85rem;
+}
+
+.student-name {
+  font-weight: 600;
+  font-size: .95rem;
+  margin-bottom: .2rem;
+}
+
+.student-schedule {
+  font-size: .75rem;
+  color: var(--text3);
+  margin-bottom: .35rem;
+}
+
+.student-price {
+  font-size: .78rem;
+  font-weight: 600;
+  color: var(--text2);
+  margin-bottom: .75rem;
+}
+
+.progress-bar {
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: .3rem;
+}
+
+.progress-fill { height: 100%; border-radius: 2px; transition: width .4s; }
+
+.progress-label {
+  font-size: .7rem;
+  color: var(--text3);
+}
+
+.badges {
+  display: flex;
+  gap: .3rem;
+  flex-wrap: wrap;
+  margin-top: .5rem;
+}
+
+.badge {
+  font-size: .65rem;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 999px;
+  letter-spacing: .02em;
+}
+
+.badge-green { background: var(--green-bg); color: var(--green); }
+.badge-red { background: var(--red-bg); color: var(--red); }
+.badge-yellow { background: var(--yellow-bg); color: var(--yellow); }
+.badge-blue { background: var(--blue-bg); color: var(--blue); }
+.badge-accent { background: var(--accent-bg); color: var(--accent); }
+
+.inactive-chip {
+  position: absolute;
+  top: .6rem; right: .6rem;
+  font-size: .6rem;
+  background: var(--surface2);
+  color: var(--text3);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+/* ───────── DETAIL PANEL ───────── */
+.detail-panel {
+  display: none;
+  background: var(--surface2);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  padding: 1.25rem;
+  margin-top: .6rem;
+  grid-column: 1 / -1;
+}
+
+.detail-panel.open { display: block; }
+
+.detail-tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 1rem;
+  overflow-x: auto;
+}
+
+.dtab {
+  padding: .5rem 1rem;
+  font-size: .78rem;
+  font-weight: 500;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  color: var(--text3);
+  white-space: nowrap;
+  font-family: var(--font-body);
+  transition: color .15s;
+}
+
+.dtab:hover { color: var(--text); }
+.dtab.active { color: var(--text); border-bottom-color: var(--accent); font-weight: 600; }
+
+.dpanel { display: none; }
+.dpanel.active { display: block; }
+
+/* ───────── FORMS ───────── */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: .3rem;
+  margin-bottom: .75rem;
+}
+
+.field label {
+  font-size: .72rem;
+  font-weight: 600;
+  color: var(--text2);
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+
+input[type=text], input[type=date], input[type=number],
+input[type=password], select, textarea {
+  padding: .65rem .9rem;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: .88rem;
+  font-family: var(--font-body);
+  background: var(--surface);
+  color: var(--text);
+  outline: none;
+  width: 100%;
+  transition: border-color .15s;
+}
+
+input:focus, select:focus, textarea:focus {
+  border-color: var(--accent);
+}
+
+textarea { resize: vertical; min-height: 70px; }
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: .6rem;
+  margin-bottom: .75rem;
+}
+
+.row-flex {
+  display: flex;
+  gap: .5rem;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  margin-bottom: .75rem;
+}
+
+.row-flex input, .row-flex select { flex: 1; min-width: 100px; }
+
+/* ───────── BUTTONS ───────── */
+.btn {
+  padding: .6rem 1.1rem;
+  border-radius: var(--radius-sm);
+  border: none;
+  font-size: .82rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: var(--font-body);
+  transition: opacity .15s, transform .1s;
+  letter-spacing: .01em;
+  white-space: nowrap;
+}
+
+.btn:active { transform: scale(.97); }
+.btn-primary { background: var(--text); color: white; }
+.btn-primary:hover { opacity: .85; }
+.btn-accent { background: var(--accent); color: white; }
+.btn-accent:hover { opacity: .88; }
+.btn-outline { background: none; border: 1.5px solid var(--border2); color: var(--text); }
+.btn-outline:hover { border-color: var(--text); }
+.btn-danger { background: var(--red-bg); color: var(--red); }
+.btn-warn { background: var(--yellow-bg); color: var(--yellow); }
+.btn-success { background: var(--green-bg); color: var(--green); }
+.btn-sm { padding: .35rem .75rem; font-size: .75rem; }
+.btn-xs { padding: .2rem .55rem; font-size: .68rem; }
+
+/* ───────── HISTORY / ANN / ABS ITEMS ───────── */
+.list-item {
+  background: var(--surface);
+  border-radius: var(--radius-sm);
+  padding: .75rem 1rem;
+  margin-bottom: .5rem;
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: .75rem;
+}
+
+.list-item-left { flex: 1; }
+
+.list-item-num { font-size: .68rem; color: var(--text3); margin-bottom: .15rem; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; }
+.list-item-title { font-size: .88rem; font-weight: 600; margin-bottom: .15rem; }
+.list-item-date { font-size: .75rem; color: var(--text3); }
+.list-item-obs { font-size: .78rem; color: var(--text2); margin-top: .3rem; font-style: italic; }
+
+/* ───────── ABS STATS ───────── */
+.abs-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: .5rem;
+  margin-bottom: 1rem;
+}
+
+.abs-stat {
+  background: var(--surface);
+  border-radius: var(--radius-sm);
+  padding: .75rem;
+  text-align: center;
+  border: 1px solid var(--border);
+}
+
+.abs-stat-val { font-family: var(--font-display); font-size: 1.5rem; }
+.abs-stat-label { font-size: .68rem; color: var(--text3); font-weight: 600; text-transform: uppercase; letter-spacing: .05em; margin-top: .1rem; }
+
+/* ───────── PAGAMENTOS ───────── */
+.pay-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: .75rem;
+}
+
+.pay-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.1rem;
+  box-shadow: var(--shadow);
+}
+
+.pay-status-btns {
+  display: flex;
+  gap: .35rem;
+  margin-top: .75rem;
+}
+
+.pay-btn {
+  flex: 1;
+  padding: .35rem .5rem;
+  border: 1.5px solid var(--border);
+  border-radius: 6px;
+  font-size: .72rem;
+  font-weight: 600;
+  font-family: var(--font-body);
+  cursor: pointer;
+  background: none;
+  color: var(--text3);
+  transition: all .15s;
+}
+
+.pay-btn.active-paid { background: var(--green-bg); color: var(--green); border-color: var(--green); }
+.pay-btn.active-parcial { background: var(--yellow-bg); color: var(--yellow); border-color: var(--yellow); }
+.pay-btn.active-pendente { background: var(--red-bg); color: var(--red); border-color: var(--red); }
+
+/* ───────── PLANEJADOR ───────── */
+.planner-output {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+  white-space: pre-wrap;
+  font-size: .88rem;
+  line-height: 1.85;
+  min-height: 120px;
+  font-family: var(--font-body);
+}
+
+/* ───────── BUSCA ───────── */
+.lesson-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+  gap: .6rem;
+}
+
+.lesson-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: .9rem 1rem;
+  box-shadow: var(--shadow);
+}
+
+.lesson-num { font-size: .68rem; color: var(--text3); font-weight: 600; text-transform: uppercase; letter-spacing: .04em; margin-bottom: .2rem; }
+.lesson-title { font-size: .9rem; font-weight: 600; margin-bottom: .5rem; line-height: 1.35; }
+.lesson-tags { display: flex; flex-wrap: wrap; gap: .3rem; }
+.tag { font-size: .65rem; font-weight: 600; padding: 2px 7px; border-radius: 4px; }
+.tag-gram { background: var(--blue-bg); color: var(--blue); }
+.tag-voc { background: var(--green-bg); color: var(--green); }
+.tag-cat { background: var(--accent-bg); color: var(--accent); }
+.tag-src { background: var(--surface2); color: var(--text2); }
+.tag-nivel { background: var(--purple-bg); color: var(--purple); }
+
+/* ───────── SEMESTRES ───────── */
+.sem-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: .9rem 1.1rem;
+  background: var(--surface);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  margin-bottom: .6rem;
+  box-shadow: var(--shadow);
+  gap: .75rem;
+  flex-wrap: wrap;
+}
+
+/* ───────── COLORS PICKER ───────── */
+.colors-grid { display: flex; gap: .5rem; flex-wrap: wrap; }
+.color-opt {
+  width: 28px; height: 28px; border-radius: 50%;
+  cursor: pointer; border: 2.5px solid transparent;
+  transition: border-color .15s, transform .1s;
+}
+.color-opt:hover { transform: scale(1.1); }
+.color-opt.selected { border-color: var(--text); }
+
+/* ───────── MODAL ───────── */
+.modal-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.45);
+  z-index: 200;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.modal-overlay.open { display: flex; }
+
+.modal {
+  background: var(--surface);
+  border-radius: 16px;
+  padding: 1.75rem;
+  width: min(480px, 100%);
+  max-height: 88vh;
+  overflow-y: auto;
+  box-shadow: 0 16px 48px rgba(0,0,0,.22);
+  animation: fadeUp .2s ease;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.modal-title {
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  margin-bottom: 1.25rem;
+}
+
+.modal-actions {
+  display: flex;
+  gap: .5rem;
+  justify-content: flex-end;
+  margin-top: 1.25rem;
+  flex-wrap: wrap;
+}
+
+/* ───────── SELECT TOPBAR ───────── */
+.top-bar {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.top-bar select {
+  width: auto;
+  padding: .5rem .85rem;
+  font-size: .82rem;
+}
+
+.save-status {
+  font-size: .75rem;
+  color: var(--text3);
+  font-style: italic;
+  margin-left: auto;
+}
+
+/* ───────── NOTE / INFO BOX ───────── */
+.note-box {
+  background: var(--blue-bg);
+  border-left: 3px solid var(--blue);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  padding: .75rem 1rem;
+  font-size: .83rem;
+  color: var(--text2);
+  line-height: 1.6;
+  margin-bottom: .75rem;
+}
+
+.info-row {
+  font-size: .83rem;
+  padding: .6rem .9rem;
+  background: var(--surface);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  margin-bottom: .6rem;
+  line-height: 1.65;
+}
+
+/* ───────── FILTER PILLS ───────── */
+.filter-row {
+  display: flex;
+  gap: .35rem;
+  flex-wrap: wrap;
+  margin-bottom: .75rem;
+}
+
+.fpill {
+  padding: .3rem .85rem;
+  border-radius: 999px;
+  border: 1.5px solid var(--border);
+  background: none;
+  font-size: .75rem;
+  font-weight: 500;
+  cursor: pointer;
+  color: var(--text3);
+  font-family: var(--font-body);
+  transition: all .15s;
+}
+
+.fpill:hover { border-color: var(--border2); color: var(--text); }
+.fpill.on { background: var(--text); color: white; border-color: var(--text); }
+
+/* ───────── EMPTY ───────── */
+.empty {
+  text-align: center;
+  padding: 2.5rem 1rem;
+  color: var(--text3);
+  font-size: .88rem;
+}
+
+/* ───────── RESPONSIVE ───────── */
+@media (max-width: 768px) {
+  .sidebar {
+    transform: translateX(-100%);
+  }
+  .sidebar.open { transform: translateX(0); }
+  .topbar { display: flex; }
+  .main { margin-left: 0; padding: 1.25rem 1rem 3rem; }
+  .week-grid { grid-template-columns: repeat(3, 1fr); }
+  .metrics { grid-template-columns: repeat(2, 1fr); }
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════
+     LOGIN SCREEN
+═══════════════════════════════════════ -->
+<div id="loginScreen">
+  <div class="login-card">
+    <div class="login-logo">Livia Lobato</div>
+    <div class="login-sub">Painel de Aulas · English Teacher</div>
+    <div class="login-field">
+      <label>Usuário</label>
+      <input type="text" id="loginUser" placeholder="seu usuário" autocomplete="username">
+    </div>
+    <div class="login-field">
+      <label>Senha</label>
+      <input type="password" id="loginPass" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter') tryLogin()">
+    </div>
+    <div class="login-err" id="loginErr"></div>
+    <button class="btn-login" onclick="tryLogin()">Entrar</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     APP
+═══════════════════════════════════════ -->
+<div id="app">
+  <!-- MOBILE TOPBAR -->
+  <div class="topbar">
+    <span class="topbar-brand">Livia Lobato</span>
+    <button class="btn-menu" onclick="toggleSidebar()">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+      </svg>
+    </button>
+  </div>
+
+  <div class="layout">
+    <!-- SIDEBAR -->
+    <nav class="sidebar" id="sidebar">
+      <div class="sidebar-brand">
+        <div class="sidebar-brand-name">Livia Lobato</div>
+        <div class="sidebar-brand-sub">English Teacher</div>
+      </div>
+
+      <div class="nav-section-label">Principal</div>
+      <button class="nav-item active" onclick="navTo('agenda',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        Agenda
+      </button>
+      <button class="nav-item" onclick="navTo('alunos',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Alunos
+      </button>
+      <button class="nav-item" onclick="navTo('pagamentos',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+        Pagamentos
+      </button>
+
+      <div class="nav-section-label">Ferramentas</div>
+      <button class="nav-item" onclick="navTo('planner',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        Planejador IA
+      </button>
+      <button class="nav-item" onclick="navTo('busca',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        WeHelpYou
+      </button>
+      <button class="nav-item" onclick="navTo('semestres',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        Semestres
+      </button>
+
+      <div class="sidebar-footer">
+        <button class="btn-logout" onclick="logout()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          Sair
+        </button>
+      </div>
+    </nav>
+
+    <!-- MAIN -->
+    <main class="main">
+
+      <!-- AGENDA -->
+      <div class="page active" id="page-agenda">
+        <div class="page-header">
+          <div class="page-title">Agenda</div>
+          <div class="page-subtitle">Visão semanal das suas aulas</div>
+        </div>
+        <div class="metrics" id="agMetrics"></div>
+        <div class="card">
+          <div class="card-title">Esta semana</div>
+          <div class="week-grid" id="weekGrid"></div>
+        </div>
+        <div class="card" style="font-size:.83rem;color:var(--text2)">
+          <strong>🕐 Fuso horário:</strong> Adriano e Giuliana estão em Portugal (UTC+1 / verão UTC+2). Confirme o horário a cada mudança de horário de verão.
+        </div>
+      </div>
+
+      <!-- ALUNOS -->
+      <div class="page" id="page-alunos">
+        <div class="page-header">
+          <div class="page-title">Alunos</div>
+        </div>
+        <div class="top-bar">
+          <label style="font-size:.78rem;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.05em">Semestre</label>
+          <select id="alunosSemSel" onchange="onSemChange()"></select>
+          <button class="btn btn-accent" onclick="openAddAluno()">+ Novo aluno</button>
+          <span class="save-status" id="saveStatus"></span>
+        </div>
+        <div class="student-grid" id="studentGrid"></div>
+      </div>
+
+      <!-- PAGAMENTOS -->
+      <div class="page" id="page-pagamentos">
+        <div class="page-header"><div class="page-title">Pagamentos</div></div>
+        <div class="top-bar">
+          <select id="paySemSel" onchange="buildPayMonths()"></select>
+          <select id="payMonthSel" onchange="renderPagamentos()"></select>
+        </div>
+        <div class="metrics" id="payMetrics"></div>
+        <div class="pay-grid" id="payGrid"></div>
+      </div>
+
+      <!-- PLANEJADOR -->
+      <div class="page" id="page-planner">
+        <div class="page-header">
+          <div class="page-title">Planejador de Aula</div>
+          <div class="page-subtitle">IA gera um plano completo em segundos</div>
+        </div>
+        <div class="card">
+          <div class="form-grid">
+            <div class="field">
+              <label>Aluno</label>
+              <select id="plAluno" onchange="fillPlannerAluno()">
+                <option value="">— Selecionar —</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Nível</label>
+              <select id="plNivel">
+                <option>A0</option><option>A1</option><option selected>A2</option><option>B1</option><option>B2</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Material / Aula</label>
+              <input type="text" id="plMaterial" placeholder="Ex: Speaking Club - Future Plans">
+            </div>
+            <div class="field">
+              <label>Duração</label>
+              <select id="plDuracao">
+                <option>50 minutos</option><option selected>60 minutos</option><option>75 minutos</option><option>90 minutos</option>
+              </select>
+            </div>
+          </div>
+          <div class="field">
+            <label>Contexto extra (opcional)</label>
+            <input type="text" id="plFoco" placeholder="Ex: aluna fala pouco, treinar produção oral; ou: revisar past simple">
+          </div>
+          <div style="display:flex;gap:.5rem;margin-top:.5rem">
+            <button class="btn btn-accent" onclick="generatePlan()" id="plBtn">✦ Gerar plano de aula</button>
+            <button class="btn btn-outline btn-sm" id="plCopyBtn" style="display:none" onclick="copyPlan()">Copiar</button>
+          </div>
+        </div>
+        <div id="plResult" style="display:none">
+          <div class="planner-output" id="plOutput"></div>
+        </div>
+      </div>
+
+      <!-- BUSCA WEHELPYOU -->
+      <div class="page" id="page-busca">
+        <div class="page-header">
+          <div class="page-title">WeHelpYou</div>
+          <div class="page-subtitle">Busque aulas por título, gramática ou vocabulário</div>
+        </div>
+        <div style="display:flex;gap:.5rem;margin-bottom:.75rem;flex-wrap:wrap">
+          <input type="text" id="searchInput" placeholder="Buscar..." oninput="filterLessons()" style="flex:1;min-width:180px">
+          <select id="levelFilter" onchange="filterLessons()" style="width:auto">
+            <option value="">Todos os níveis</option>
+            <option value="BEG">A0-A1 (Beginner)</option>
+            <option value="BAS">A2 (Basic)</option>
+            <option value="INT">B1–B2 (Intermediate)</option>
+            <option value="SC">Speaking Club</option>
+          </select>
+        </div>
+        <div class="filter-row" id="catFilters"></div>
+        <div style="font-size:.78rem;color:var(--text3);margin-bottom:.75rem" id="lessonCount"></div>
+        <div class="lesson-grid" id="lessonGrid"></div>
+      </div>
+
+      <!-- SEMESTRES -->
+      <div class="page" id="page-semestres">
+        <div class="page-header"><div class="page-title">Semestres</div></div>
+        <div class="card">
+          <div id="semList"></div>
+          <button class="btn btn-accent" style="margin-top:.5rem" onclick="openNewSem()">+ Novo semestre</button>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- MODAL SEMESTRE -->
+<div class="modal-overlay" id="modalSem">
+  <div class="modal">
+    <div class="modal-title">Novo semestre</div>
+    <div class="form-grid">
+      <div class="field"><label>Nome *</label><input type="text" id="semNome" placeholder="2º Semestre 2026"></div>
+      <div class="field"><label>Início</label><input type="date" id="semInicio"></div>
+      <div class="field"><label>Fim</label><input type="date" id="semFim"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal('modalSem')">Cancelar</button>
+      <button class="btn btn-accent" onclick="saveSem()">Criar semestre</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL ALUNO -->
+<div class="modal-overlay" id="modalAluno">
+  <div class="modal">
+    <div class="modal-title" id="modalAlunoTitle">Novo aluno</div>
+    <div class="form-grid">
+      <div class="field"><label>Nome *</label><input type="text" id="aNome" placeholder="Nome completo"></div>
+      <div class="field"><label>Nível</label>
+        <select id="aNivel"><option>A0</option><option>A1</option><option selected>A2</option><option>B1</option><option>B2</option><option>C1</option><option>C2</option></select>
+      </div>
+      <div class="field"><label>Horários</label><input type="text" id="aHorario" placeholder="Seg 18:15 · Qua 18:30"></div>
+      <div class="field"><label>Valor mensal</label><input type="text" id="aValor" placeholder="R$ 470 ou €72"></div>
+      <div class="field"><label>País</label><input type="text" id="aPais" placeholder="Brasil 🇧🇷"></div>
+      <div class="field"><label>Total de aulas</label><input type="number" id="aTotalAulas" placeholder="20" min="1"></div>
+    </div>
+    <div class="field"><label>Observações</label><textarea id="aObs" placeholder="Pontos fortes, dificuldades, contexto..."></textarea></div>
+    <div class="field" style="margin-top:.5rem"><label>Cor</label><div class="colors-grid" id="colorGrid"></div></div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal('modalAluno')">Cancelar</button>
+      <button class="btn btn-danger btn-sm" id="btnDeleteAluno" style="display:none" onclick="deleteAluno()">Excluir</button>
+      <button class="btn btn-accent" onclick="saveAluno()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════
+// CONSTANTS
+// ═══════════════════════════════════════
+const LOGIN_USER = 'livia';
+const LOGIN_PASS = 'ingles2026';
+
+const EUR = 5.85;
+const MONTHS = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+const DAYS = ['Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
+
+const COLORS = [
+  {bg:'#B5D4F4',fg:'#0C447C'},{bg:'#9FE1CB',fg:'#085041'},
+  {bg:'#F4C0D1',fg:'#72243E'},{bg:'#FAC775',fg:'#633806'},
+  {bg:'#CECBF6',fg:'#3C3489'},{bg:'#D0EAD0',fg:'#1A5C1A'},
+  {bg:'#FDE8C8',fg:'#7A3D00'},{bg:'#E8D5F5',fg:'#5B2D8E'},
+];
+
+const SRC_LABEL = {BEG:'Beginner (A0–A1)',BAS:'Basic (A2)',INT:'Intermediate (B1–B2)',SC:'Speaking Club'};
+const SRC_NIVEL = {BEG:'A0-A1',BASIC:'A2',INT:'B1-B2',SC:'SC'};
+
+// ═══════════════════════════════════════
+// LOGIN
+// ═══════════════════════════════════════
+function tryLogin() {
+  const u = document.getElementById('loginUser').value.trim();
+  const p = document.getElementById('loginPass').value;
+  if (u === LOGIN_USER && p === LOGIN_PASS) {
+    localStorage.setItem('ll_auth','1');
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('app').classList.add('visible');
+    init();
+  } else {
+    document.getElementById('loginErr').textContent = 'Usuário ou senha incorretos.';
+    document.getElementById('loginPass').value = '';
+  }
+}
+
+function logout() {
+  localStorage.removeItem('ll_auth');
+  location.reload();
+}
+
+// ═══════════════════════════════════════
+// DB — localStorage
+// ═══════════════════════════════════════
+let db = { semesters:[], students:[], records:{}, payments:{} };
+let currentSemId = null;
+let editingAlunoId = null;
+let selectedColor = 0;
+
+function loadDB() {
+  try {
+    const raw = localStorage.getItem('liviadb_site_v1');
+    if (raw) db = JSON.parse(raw);
+  } catch(e) {}
+  if (!db.semesters) db.semesters = [];
+  if (!db.students) db.students = [];
+  if (!db.records) db.records = {};
+  if (!db.payments) db.payments = {};
+  if (!db.semesters.length) {
+    const sid = uid();
+    db.semesters = [{id:sid,nome:'1º Semestre 2026',inicio:'2026-02-01',fim:'2026-06-30'}];
+    db.students = getDefaultStudents(sid);
+  }
+  const savedSemId = localStorage.getItem('ll_currentSemId');
+  const validSem = db.semesters.find(s => s.id === savedSemId);
+  currentSemId = validSem ? validSem.id : db.semesters[0].id;
+  saveDB();
+}
+
+function saveDB() {
+  localStorage.setItem('liviadb_site_v1', JSON.stringify(db));
+  if (currentSemId) localStorage.setItem('ll_currentSemId', currentSemId);
+  const el = document.getElementById('saveStatus');
+  if (el) { el.textContent = '✓ Salvo'; setTimeout(()=>el.textContent='',2000); }
+}
+
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+
+function getDefaultStudents(semId) {
+  return [
+    {id:uid(),semId,nome:'Juliana Farias',nivel:'A2',horario:'Seg 18:15 · Qua 18:30',valor:'R$ 470',pais:'Brasil 🇧🇷',totalAulas:38,doneAulas:28,obs:'Melhor nível da turma. Ainda tenta voltar ao português.',colorIdx:0,ativo:true,lastClass:{n:28,date:'18/05/2026',lesson:'Speaking Club - Verbs + Prepositions'},nextClasses:'Verbs + Prepositions → Future Plans → Quality of Life'},
+    {id:uid(),semId,nome:"Giuliana D'Isep",nivel:'A2',horario:'Qui 09:00 · Sáb 13:15',valor:'€72',pais:'Portugal 🇵🇹',totalAulas:38,doneAulas:29,obs:'Não tem medo de falar! Várias faltas no semestre.',colorIdx:4,ativo:true,lastClass:{n:29,date:'16/05/2026',lesson:'London vs Paris'},nextClasses:'London vs Paris (finalizar) → Giving Your Opinion → Growth Mindset'},
+    {id:uid(),semId,nome:'Amanda Andrade',nivel:'A1',horario:'Seg 20:00',valor:'R$ 270',pais:'Brasil 🇧🇷',totalAulas:20,doneAulas:13,obs:'Nível mais iniciante. Conhecimento prévio: países e verbo To Be.',colorIdx:3,ativo:true,lastClass:{n:13,date:'18/05/2026',lesson:'Hobbies (Fluency)'},nextClasses:'Getting to Know Each Other → Do Vs. Make → How Are You Feeling?'},
+    {id:uid(),semId,nome:'Daliana Priscila',nivel:'A1',horario:'Ter 11:10',valor:'R$ 270',pais:'Brasil 🇧🇷',totalAulas:20,doneAulas:12,obs:'Melhor na escrita. Produção oral ainda limitada.',colorIdx:2,ativo:true,lastClass:{n:12,date:'12/05/2026',lesson:'Class 15: A Day in the Life (slide 16)'},nextClasses:'Speaking Club: Work and Career → Class 15 (finalizar) → Class 16'},
+    {id:uid(),semId,nome:'Adriano Monteiro',nivel:'A2',horario:'Ter 16:00 · Qui 16:00',valor:'€75',pais:'Portugal 🇵🇹',totalAulas:20,doneAulas:8,obs:'Entende bem mas não se expressa ainda.',colorIdx:1,ativo:true,lastClass:{n:8,date:'28/05/2026',lesson:'A Day in the Life'},nextClasses:"How Often Do You Use Your Phone? → Small Talk → I'm Busy! → Let Me Introduce Myself"},
+  ];
+}
+
+// ═══════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════
+function navTo(page, btn) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+  btn.classList.add('active');
+  closeSidebar();
+  if (page==='agenda') renderAgenda();
+  if (page==='alunos') { buildSemSel('alunosSemSel',onSemChange); renderAlunos(); }
+  if (page==='pagamentos') { buildSemSel('paySemSel',buildPayMonths); buildPayMonths(); }
+  if (page==='planner') buildPlannerAlunos();
+  if (page==='semestres') renderSemestres();
+  if (page==='busca') { buildCatFilters(); filterLessons(); }
+}
+
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+}
+
+// ═══════════════════════════════════════
+// AGENDA
+// ═══════════════════════════════════════
+function renderAgenda() {
+  const ss = db.students.filter(s=>s.semId===currentSemId&&s.ativo);
+  const aulas = ss.reduce((a,s)=>a+(s.horario.match(/·/g)||[]).length+1,0);
+  const receita = ss.reduce((a,s)=>{
+    const v=parseFloat((s.valor||'0').replace(/[^\d.]/g,''))||0;
+    return a+(s.valor.includes('€')?v*EUR:v);
+  },0);
+  const now = new Date();
+  const mk = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  let pagos=0; ss.forEach(s=>{ if((db.payments[`${s.id}_${mk}`]||'')===('pago')) pagos++; });
+
+  document.getElementById('agMetrics').innerHTML = `
+    <div class="metric-card"><div class="metric-label">Aulas / semana</div><div class="metric-value">${aulas}</div></div>
+    <div class="metric-card"><div class="metric-label">Alunos ativos</div><div class="metric-value">${ss.length}</div></div>
+    <div class="metric-card"><div class="metric-label">Receita mensal</div><div class="metric-value">R$\u00a0${Math.round(receita).toLocaleString('pt-BR')}</div><div class="metric-sub">aprox. em reais</div></div>
+    <div class="metric-card"><div class="metric-label">Pagaram</div><div class="metric-value">${pagos}/${ss.length}</div><div class="metric-sub">${MONTHS[now.getMonth()]}</div></div>`;
+
+  const grid = document.getElementById('weekGrid'); grid.innerHTML='';
+  DAYS.forEach(day=>{
+    const col=document.createElement('div'); col.className='day-col';
+    col.innerHTML=`<div class="day-name">${day}</div>`;
+    ss.forEach(s=>{
+      (s.horario||'').split('·').map(p=>p.trim()).forEach(p=>{
+        const abbr=p.split(' ')[0].toLowerCase();
+        const map={seg:'segunda',ter:'terça',qua:'quarta',qui:'quinta',sex:'sexta',sáb:'sábado',sab:'sábado'};
+        if(map[abbr]===day.toLowerCase()){
+          const time=p.split(' ').slice(1).join(' ');
+          const c=COLORS[s.colorIdx%8];
+          col.innerHTML+=`<div class="agenda-slot" style="background:${c.bg};color:${c.fg}">${time}<br>${s.nome.split(' ')[0]}</div>`;
+        }
+      });
+    });
+    if(!col.querySelector('.agenda-slot')) col.innerHTML+=`<div style="font-size:.72rem;color:var(--text3);padding:.35rem 0">Livre</div>`;
+    grid.appendChild(col);
+  });
+}
+
+// ═══════════════════════════════════════
+// ALUNOS
+// ═══════════════════════════════════════
+function ensureRec(sid) {
+  if(!db.records[sid]) db.records[sid]={absences:[],annotations:[],history:[]};
+  if(!db.records[sid].history) db.records[sid].history=[];
+}
+
+function buildSemSel(elId, cb) {
+  const sel=document.getElementById(elId); if(!sel) return;
+  const prev=sel.value;
+  sel.innerHTML='';
+  db.semesters.forEach(s=>{
+    const o=document.createElement('option'); o.value=s.id; o.textContent=s.nome;
+    if(s.id===currentSemId||s.id===prev) o.selected=true;
+    sel.appendChild(o);
+  });
+  sel.onchange=cb;
+}
+
+function onSemChange() { currentSemId=document.getElementById('alunosSemSel').value; renderAlunos(); }
+
+function renderAlunos() {
+  buildSemSel('alunosSemSel',onSemChange);
+  const ss=db.students.filter(s=>s.semId===currentSemId);
+  const grid=document.getElementById('studentGrid'); grid.innerHTML='';
+  if(!ss.length){grid.innerHTML='<div class="empty">Nenhum aluno neste semestre.<br>Clique em "+ Novo aluno" para adicionar.</div>';return;}
+  ss.forEach(s=>{
+    ensureRec(s.id);
+    const rec=db.records[s.id];
+    const pct=s.totalAulas?Math.round(s.doneAulas/s.totalAulas*100):0;
+    const col=COLORS[s.colorIdx%8];
+    const faltas=(rec.absences||[]).filter(a=>a.type==='falta').length;
+    const bAbs=faltas===0?'badge-green':faltas<=2?'badge-yellow':'badge-red';
+    const bAbsTxt=faltas===0?'0 faltas':`${faltas} falta${faltas>1?'s':''}${faltas>=3?' ⚠':''}`;
+    const now=new Date(); const mk=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+    const pst=db.payments[`${s.id}_${mk}`]||'pendente';
+    const bPay=pst==='pago'?'badge-green':pst==='parcial'?'badge-yellow':'badge-red';
+    const bPayTxt=pst==='pago'?'✓ Pago':pst==='parcial'?'Parcial':'Pendente';
+
+    // Card
+    const card=document.createElement('div'); card.className='student-card'+(s.ativo?'':' scard-inactive'); card.id='sc-'+s.id;
+    card.innerHTML=`${!s.ativo?'<div class="inactive-chip">Inativo</div>':''}
+<div class="student-avatar" style="background:${col.bg};color:${col.fg}">${initials(s.nome)}</div>
+<div class="student-name">${s.nome}</div>
+<div class="student-schedule">${s.horario||'—'}</div>
+<div class="student-price">${s.valor||'—'} · ${s.pais||'—'} · ${s.nivel}</div>
+<div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:${col.fg}"></div></div>
+<div class="progress-label">${s.doneAulas}/${s.totalAulas} aulas · ${pct}%</div>
+<div class="badges">
+  <span class="badge ${bAbs}" id="babs-${s.id}">${bAbsTxt}</span>
+  <span class="badge ${bPay}" id="bpay-${s.id}">${bPayTxt}</span>
+</div>`;
+    card.onclick=()=>toggleDetail(s.id);
+    grid.appendChild(card);
+
+    // Detail panel — placed inside grid-column: 1/-1
+    const det=document.createElement('div'); det.className='detail-panel'; det.id='det-'+s.id;
+    det.innerHTML=buildDetailHTML(s);
+    grid.appendChild(det);
+  });
+}
+
+function initials(n){return n.split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase();}
+
+function buildDetailHTML(s) {
+  return `
+<div class="detail-tabs">
+  <button class="dtab active" onclick="showDTab('${s.id}','info',this)">Perfil</button>
+  <button class="dtab" onclick="showDTab('${s.id}','prog',this)">Progresso</button>
+  <button class="dtab" onclick="showDTab('${s.id}','hist',this)">Histórico</button>
+  <button class="dtab" onclick="showDTab('${s.id}','abs',this)">Faltas</button>
+  <button class="dtab" onclick="showDTab('${s.id}','ann',this)">Anotações</button>
+</div>
+
+<div id="dp-info-${s.id}" class="dpanel active">
+  <div class="note-box">${s.obs||'Sem observações.'}</div>
+  ${s.lastClass?`<div class="info-row"><strong>Última aula:</strong> #${s.lastClass.n||'—'} · ${s.lastClass.date||'—'} · ${s.lastClass.lesson||'—'}</div>`:''}
+  ${s.nextClasses?`<div class="info-row"><strong>Próximas:</strong> ${s.nextClasses}</div>`:''}
+  <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.75rem">
+    <button class="btn btn-outline btn-sm" onclick="openEditAluno('${s.id}');event.stopPropagation()">Editar</button>
+    <button class="btn ${s.ativo?'btn-warn':'btn-success'} btn-sm" onclick="toggleAtivo('${s.id}');event.stopPropagation()">${s.ativo?'Marcar inativo':'Reativar'}</button>
+  </div>
+</div>
+
+<div id="dp-prog-${s.id}" class="dpanel">
+  <div style="margin-bottom:1rem">
+    <div style="font-size:.8rem;font-weight:600;margin-bottom:.6rem">Aulas dadas</div>
+    <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">
+      <input type="number" id="done-${s.id}" value="${s.doneAulas}" min="0" max="${s.totalAulas}" style="width:75px">
+      <span style="font-size:.82rem;color:var(--text3)">de ${s.totalAulas}</span>
+      <button class="btn btn-primary btn-sm" onclick="updateDone('${s.id}')">Atualizar</button>
+    </div>
+  </div>
+  <div style="margin-bottom:1rem">
+    <div style="font-size:.8rem;font-weight:600;margin-bottom:.6rem">Registrar aula no histórico</div>
+    <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:.5rem">
+      <input type="number" id="hn-${s.id}" placeholder="#" style="width:60px">
+      <input type="date" id="hd-${s.id}" style="flex:1;min-width:130px">
+      <input type="text" id="hl-${s.id}" placeholder="Aula / material" style="flex:2;min-width:140px">
+    </div>
+    <textarea id="ho-${s.id}" placeholder="Observações (opcional)..." style="min-height:50px;margin-bottom:.5rem"></textarea>
+    <button class="btn btn-primary btn-sm" onclick="addHistory('${s.id}')">+ Adicionar ao histórico</button>
+  </div>
+  <div>
+    <div style="font-size:.8rem;font-weight:600;margin-bottom:.5rem">Próximas aulas</div>
+    <textarea id="next-${s.id}" style="min-height:55px">${s.nextClasses||''}</textarea>
+    <button class="btn btn-primary btn-sm" style="margin-top:.4rem" onclick="updateNext('${s.id}')">Salvar</button>
+  </div>
+</div>
+
+<div id="dp-hist-${s.id}" class="dpanel">
+  <div id="hist-list-${s.id}"></div>
+</div>
+
+<div id="dp-abs-${s.id}" class="dpanel">
+  <div id="abs-stats-${s.id}"></div>
+  <div class="row-flex">
+    <input type="date" id="abs-date-${s.id}">
+    <select id="abs-type-${s.id}">
+      <option value="falta">Falta (não avisou)</option>
+      <option value="cancel">Cancelou (avisou)</option>
+      <option value="reposicao">Reposição feita</option>
+    </select>
+    <button class="btn btn-primary btn-sm" onclick="addAbsence('${s.id}')">Registrar</button>
+  </div>
+  <div id="abs-list-${s.id}"></div>
+</div>
+
+<div id="dp-ann-${s.id}" class="dpanel">
+  <div style="margin-bottom:1rem">
+    <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:.5rem">
+      <input type="date" id="ann-date-${s.id}">
+      <input type="text" id="ann-lesson-${s.id}" placeholder="Aula / material" style="flex:1;min-width:140px">
+    </div>
+    <textarea id="ann-text-${s.id}" placeholder="Anotações da aula..."></textarea>
+    <button class="btn btn-primary btn-sm" style="margin-top:.4rem" onclick="addAnnotation('${s.id}')">Salvar anotação</button>
+  </div>
+  <div id="ann-list-${s.id}"></div>
+</div>`;
+}
+
+function showDTab(sid,tab,btn){
+  ['info','prog','hist','abs','ann'].forEach(t=>{
+    const el=document.getElementById(`dp-${t}-${sid}`); if(el) el.classList.toggle('active',t===tab);
+  });
+  document.getElementById('det-'+sid)?.querySelectorAll('.dtab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  if(tab==='hist') renderHistory(sid);
+  if(tab==='abs') renderAbsences(sid);
+  if(tab==='ann') renderAnnotations(sid);
+}
+
+function toggleDetail(id){
+  const det=document.getElementById('det-'+id); const card=document.getElementById('sc-'+id);
+  const open=det.classList.contains('open');
+  document.querySelectorAll('.detail-panel').forEach(d=>d.classList.remove('open'));
+  document.querySelectorAll('.student-card').forEach(c=>c.classList.remove('open'));
+  if(!open){det.classList.add('open');card.classList.add('open');}
+}
+
+// PROGRESSO
+function updateDone(sid){
+  const s=db.students.find(x=>x.id===sid); if(!s) return;
+  s.doneAulas=Math.min(parseInt(document.getElementById('done-'+sid)?.value)||0,s.totalAulas);
+  saveDB(); renderAlunos();
+}
+function updateNext(sid){
+  const s=db.students.find(x=>x.id===sid); if(!s) return;
+  s.nextClasses=document.getElementById('next-'+sid)?.value||''; saveDB(); renderAlunos();
+}
+function toggleAtivo(sid){
+  const s=db.students.find(x=>x.id===sid); if(!s) return; s.ativo=!s.ativo; saveDB(); renderAlunos();
+}
+
+// HISTÓRICO
+function addHistory(sid){
+  ensureRec(sid);
+  const n=document.getElementById('hn-'+sid)?.value;
+  const d=fromISO(document.getElementById('hd-'+sid)?.value||'');
+  const l=document.getElementById('hl-'+sid)?.value.trim();
+  const o=document.getElementById('ho-'+sid)?.value.trim();
+  if(!d||!l){alert('Preencha a data e o material da aula.');return;}
+  db.records[sid].history.unshift({n,date:d,lesson:l,obs:o,id:uid()});
+  const s=db.students.find(x=>x.id===sid); if(s) s.lastClass={n,date:d,lesson:l};
+  document.getElementById('hn-'+sid).value=''; document.getElementById('hd-'+sid).value='';
+  document.getElementById('hl-'+sid).value=''; document.getElementById('ho-'+sid).value='';
+  saveDB(); renderAlunos(); renderHistory(sid);
+}
+
+function renderHistory(sid){
+  ensureRec(sid);
+  const hist=db.records[sid].history||[];
+  const el=document.getElementById('hist-list-'+sid); if(!el) return;
+  if(!hist.length){el.innerHTML='<div class="empty">Nenhuma aula registrada.<br>Use a aba Progresso para adicionar.</div>';return;}
+  el.innerHTML=hist.map((h,i)=>`
+<div class="list-item">
+  <div class="list-item-left">
+    ${h.n?`<div class="list-item-num">Aula #${h.n}</div>`:''}
+    <div class="list-item-title">${h.lesson}</div>
+    <div class="list-item-date">${h.date}</div>
+    ${h.obs?`<div class="list-item-obs">${h.obs}</div>`:''}
+  </div>
+  <button class="btn btn-danger btn-xs" onclick="removeHistory('${sid}',${i})">✕</button>
+</div>`).join('');
+}
+
+function removeHistory(sid,idx){ensureRec(sid);db.records[sid].history.splice(idx,1);saveDB();renderHistory(sid);}
+
+// FALTAS
+function absLabel(t){return{falta:'Falta (não avisou)',cancel:'Cancelou (avisou)',reposicao:'Reposição feita'}[t]||t;}
+
+function renderAbsences(sid){
+  ensureRec(sid);
+  const abs=db.records[sid].absences||[];
+  const f=abs.filter(a=>a.type==='falta').length, c=abs.filter(a=>a.type==='cancel').length, r=abs.filter(a=>a.type==='reposicao').length;
+  const st=document.getElementById('abs-stats-'+sid);
+  if(st) st.innerHTML=`<div class="abs-stats">
+<div class="abs-stat"><div class="abs-stat-val" style="color:var(--red)">${f}</div><div class="abs-stat-label">Faltas</div></div>
+<div class="abs-stat"><div class="abs-stat-val" style="color:var(--yellow)">${c}</div><div class="abs-stat-label">Cancelamentos</div></div>
+<div class="abs-stat"><div class="abs-stat-val" style="color:var(--green)">${r}</div><div class="abs-stat-label">Reposições</div></div></div>`;
+  const list=document.getElementById('abs-list-'+sid); if(!list) return;
+  if(!abs.length){list.innerHTML='<div class="empty">Nenhuma ausência registrada.</div>';return;}
+  list.innerHTML=[...abs].reverse().map((a,ri)=>{const i=abs.length-1-ri;return`<div class="list-item"><div class="list-item-left"><div class="list-item-title">${absLabel(a.type)}</div><div class="list-item-date">${a.date}</div></div><button class="btn btn-danger btn-xs" onclick="removeAbsence('${sid}',${i})">✕</button></div>`;}).join('');
+}
+
+function addAbsence(sid){
+  ensureRec(sid);
+  const date=fromISO(document.getElementById('abs-date-'+sid)?.value||'');
+  const type=document.getElementById('abs-type-'+sid)?.value;
+  if(!date){alert('Selecione a data.');return;}
+  db.records[sid].absences.push({date,type}); updateAbsBadge(sid); renderAbsences(sid); saveDB();
+}
+function removeAbsence(sid,idx){ensureRec(sid);db.records[sid].absences.splice(idx,1);updateAbsBadge(sid);renderAbsences(sid);saveDB();}
+function updateAbsBadge(sid){
+  const f=(db.records[sid]?.absences||[]).filter(a=>a.type==='falta').length;
+  const cl=f===0?'badge-green':f<=2?'badge-yellow':'badge-red';
+  const tx=f===0?'0 faltas':`${f} falta${f>1?'s':''}${f>=3?' ⚠':''}`;
+  const el=document.getElementById('babs-'+sid); if(el){el.className=`badge ${cl}`;el.textContent=tx;}
+}
+
+// ANOTAÇÕES
+function renderAnnotations(sid){
+  ensureRec(sid);
+  const anns=db.records[sid].annotations||[];
+  const el=document.getElementById('ann-list-'+sid); if(!el) return;
+  if(!anns.length){el.innerHTML='<div class="empty">Nenhuma anotação ainda.</div>';return;}
+  el.innerHTML=[...anns].reverse().map((a,ri)=>{const i=anns.length-1-ri;return`<div class="list-item" style="flex-direction:column;align-items:stretch"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.4rem"><div><span style="font-size:.75rem;color:var(--text3)">${a.date}</span>${a.lesson?` · <strong style="font-size:.82rem">${a.lesson}</strong>`:''}</div><button class="btn btn-danger btn-xs" onclick="removeAnnotation('${sid}',${i})">✕</button></div><div style="font-size:.85rem;color:var(--text2);line-height:1.65;white-space:pre-wrap">${a.text}</div></div>`;}).join('');
+}
+function addAnnotation(sid){
+  ensureRec(sid);
+  const date=fromISO(document.getElementById('ann-date-'+sid)?.value||'');
+  const lesson=document.getElementById('ann-lesson-'+sid)?.value.trim();
+  const text=document.getElementById('ann-text-'+sid)?.value.trim();
+  if(!date||!text){alert('Preencha data e anotação.');return;}
+  db.records[sid].annotations.push({date,lesson,text,id:uid()});
+  document.getElementById('ann-text-'+sid).value=''; document.getElementById('ann-lesson-'+sid).value='';
+  renderAnnotations(sid); saveDB();
+}
+function removeAnnotation(sid,idx){ensureRec(sid);db.records[sid].annotations.splice(idx,1);renderAnnotations(sid);saveDB();}
+
+// ═══════════════════════════════════════
+// PAGAMENTOS
+// ═══════════════════════════════════════
+function getSemMonths(sem){
+  if(!sem||!sem.inicio||!sem.fim) return[];
+  const months=[]; let d=new Date(sem.inicio+'T12:00:00'); const end=new Date(sem.fim+'T12:00:00');
+  while(d<=end){months.push(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`);d.setMonth(d.getMonth()+1);}
+  return months;
+}
+
+function buildPayMonths(){
+  const semId=document.getElementById('paySemSel')?.value||currentSemId;
+  const sem=db.semesters.find(s=>s.id===semId);
+  const months=getSemMonths(sem);
+  const ms=document.getElementById('payMonthSel'); if(!ms) return;
+  ms.innerHTML='';
+  months.forEach(m=>{const[y,mo]=m.split('-');const o=document.createElement('option');o.value=m;o.textContent=`${MONTHS[parseInt(mo)-1]} ${y}`;ms.appendChild(o);});
+  const now=new Date(); const cur=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  if(months.includes(cur)) ms.value=cur; else if(months.length) ms.value=months[months.length-1];
+  renderPagamentos();
+}
+
+function renderPagamentos(){
+  const semId=document.getElementById('paySemSel')?.value||currentSemId;
+  const mk=document.getElementById('payMonthSel')?.value||'';
+  const ss=db.students.filter(s=>s.semId===semId&&s.ativo);
+  let pagos=0,total=0,rec=0;
+  ss.forEach(s=>{
+    const v=parseFloat((s.valor||'0').replace(/[^\d.]/g,''))||0;
+    const vBRL=s.valor.includes('€')?v*EUR:v;
+    total+=vBRL;
+    const st=db.payments[`${s.id}_${mk}`]||'pendente';
+    if(st==='pago'){pagos++;rec+=vBRL;}else if(st==='parcial') rec+=vBRL/2;
+  });
+  document.getElementById('payMetrics').innerHTML=`
+<div class="metric-card"><div class="metric-label">Alunos</div><div class="metric-value">${ss.length}</div></div>
+<div class="metric-card"><div class="metric-label">Pagaram</div><div class="metric-value">${pagos}/${ss.length}</div></div>
+<div class="metric-card"><div class="metric-label">Recebido</div><div class="metric-value">R$\u00a0${Math.round(rec).toLocaleString('pt-BR')}</div></div>
+<div class="metric-card"><div class="metric-label">Total esperado</div><div class="metric-value">R$\u00a0${Math.round(total).toLocaleString('pt-BR')}</div></div>`;
+  const grid=document.getElementById('payGrid'); grid.innerHTML='';
+  ss.forEach(s=>{
+    const col=COLORS[s.colorIdx%8];
+    const st=db.payments[`${s.id}_${mk}`]||'pendente';
+    const card=document.createElement('div'); card.className='pay-card';
+    card.innerHTML=`
+<div style="display:flex;align-items:center;gap:.75rem;margin-bottom:.5rem">
+  <div class="student-avatar" style="background:${col.bg};color:${col.fg};width:34px;height:34px;font-size:.72rem;margin:0">${initials(s.nome)}</div>
+  <div><div style="font-weight:600;font-size:.92rem">${s.nome}</div><div style="font-size:.75rem;color:var(--text3)">${s.valor} · ${s.nivel}</div></div>
+</div>
+<div class="pay-status-btns">
+  <button class="pay-btn ${st==='pago'?'active-paid':''}" onclick="setPayment('${s.id}','${mk}','pago',this)">✓ Pago</button>
+  <button class="pay-btn ${st==='parcial'?'active-parcial':''}" onclick="setPayment('${s.id}','${mk}','parcial',this)">Parcial</button>
+  <button class="pay-btn ${st==='pendente'?'active-pendente':''}" onclick="setPayment('${s.id}','${mk}','pendente',this)">Pendente</button>
+</div>`;
+    grid.appendChild(card);
+  });
+}
+
+function setPayment(sid,mk,status,btn){
+  db.payments[`${sid}_${mk}`]=status;
+  saveDB(); renderPagamentos(); renderAgenda();
+  const now=new Date(); const cur=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  if(mk===cur){
+    const cl=status==='pago'?'badge-green':status==='parcial'?'badge-yellow':'badge-red';
+    const tx=status==='pago'?'✓ Pago':status==='parcial'?'Parcial':'Pendente';
+    const el=document.getElementById('bpay-'+sid); if(el){el.className=`badge ${cl}`;el.textContent=tx;}
+  }
+}
+
+// ═══════════════════════════════════════
+// PLANEJADOR IA
+// ═══════════════════════════════════════
+function buildPlannerAlunos(){
+  const sel=document.getElementById('plAluno'); if(!sel) return;
+  const prev=sel.value;
+  sel.innerHTML='<option value="">— Selecionar aluno —</option>';
+  db.students.filter(s=>s.semId===currentSemId&&s.ativo).forEach(s=>{
+    const o=document.createElement('option'); o.value=s.id; o.textContent=s.nome;
+    if(s.id===prev) o.selected=true;
+    sel.appendChild(o);
+  });
+}
+
+function fillPlannerAluno(){
+  const sid=document.getElementById('plAluno')?.value; if(!sid) return;
+  const s=db.students.find(x=>x.id===sid); if(!s) return;
+  document.getElementById('plNivel').value=s.nivel||'A1';
+  if(s.nextClasses) document.getElementById('plMaterial').value=s.nextClasses.split('→')[0].trim();
+  document.getElementById('plFoco').value=s.obs||'';
+}
+
+async function generatePlan(){
+  const sid=document.getElementById('plAluno')?.value;
+  const nivel=document.getElementById('plNivel')?.value;
+  const material=document.getElementById('plMaterial')?.value.trim();
+  const duracao=document.getElementById('plDuracao')?.value;
+  const foco=document.getElementById('plFoco')?.value.trim();
+  if(!material){alert('Informe o material ou aula.');return;}
+  const s=sid?db.students.find(x=>x.id===sid):null;
+  const nomAluno=s?s.nome:'aluno';
+
+  const prompt=`Você é uma assistente especializada em planejamento de aulas de inglês. Crie um plano de aula completo e prático com as seguintes informações:
+
+Aluno: ${nomAluno}
+Nível: ${nivel}
+Material/Aula: ${material}
+Duração: ${duracao}
+${foco?`Contexto adicional: ${foco}`:''}
+
+Gere o plano neste formato exato:
+
+🎯 OBJETIVO DA AULA
+[1-2 frases claras do que o aluno vai aprender]
+
+📋 ESTRUTURA (${duracao})
+[Divida em blocos com tempo estimado: Warm-up, Apresentação, Prática, Produção, Wrap-up]
+
+💬 VOCABULÁRIO-CHAVE
+[Liste 5-8 palavras ou expressões principais com tradução]
+
+🗣️ ATIVIDADES DE FALA
+[2-3 atividades práticas de produção oral adequadas ao nível]
+
+📝 HOMEWORK
+[1 atividade curta para casa]
+
+💡 DICA PARA A PROFESSORA
+[1 observação específica para este nível/aluno]
+
+Responda em português. Seja específico, prático e adequado ao nível ${nivel}.`;
+
+  const btn=document.getElementById('plBtn');
+  const copyBtn=document.getElementById('plCopyBtn');
+  btn.textContent='⏳ Gerando...'; btn.disabled=true;
+  copyBtn.style.display='none';
+  document.getElementById('plResult').style.display='block';
+  document.getElementById('plOutput').textContent='Gerando plano de aula com IA...';
+
+  try {
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:prompt}]})
+    });
+    const data=await resp.json();
+    const text=data.content?.map(c=>c.text||'').join('')||'Erro ao gerar plano.';
+    document.getElementById('plOutput').textContent=text;
+    copyBtn.style.display='inline-block';
+  } catch(e) {
+    document.getElementById('plOutput').textContent='Erro ao conectar com a IA. Tente novamente.';
+  }
+  btn.textContent='✦ Gerar plano de aula'; btn.disabled=false;
+}
+
+function copyPlan(){
+  const t=document.getElementById('plOutput')?.textContent||'';
+  navigator.clipboard.writeText(t).then(()=>{
+    const b=document.getElementById('plCopyBtn');
+    if(b){b.textContent='Copiado!';setTimeout(()=>b.textContent='Copiar',2000);}
+  });
+}
+
+// ═══════════════════════════════════════
+// SEMESTRES
+// ═══════════════════════════════════════
+function renderSemestres(){
+  const el=document.getElementById('semList'); if(!el) return;
+  if(!db.semesters.length){el.innerHTML='<div class="empty">Nenhum semestre.</div>';return;}
+  el.innerHTML=db.semesters.map(s=>{
+    const count=db.students.filter(st=>st.semId===s.id).length;
+    const isCur=s.id===currentSemId;
+    return`<div class="sem-item" style="border-color:${isCur?'var(--accent)':'var(--border)'}">
+<div>
+  <div style="font-weight:600;font-size:.95rem">${s.nome} ${isCur?'<span class="badge badge-accent" style="margin-left:.35rem">atual</span>':''}</div>
+  <div style="font-size:.78rem;color:var(--text3);margin-top:.2rem">${s.inicio||'—'} → ${s.fim||'—'} · ${count} aluno${count!==1?'s':''}</div>
+</div>
+<div style="display:flex;gap:.4rem;flex-wrap:wrap">
+  ${!isCur?`<button class="btn btn-outline btn-sm" onclick="switchSem('${s.id}')">Selecionar</button>`:''}
+  <button class="btn btn-primary btn-sm" onclick="copyAlunosToSem('${s.id}')">Copiar alunos →</button>
+</div></div>`;
+  }).join('');
+}
+
+function openNewSem(){ document.getElementById('modalSem').classList.add('open'); }
+
+function saveSem(){
+  const nome=document.getElementById('semNome').value.trim(); if(!nome){alert('Dê um nome.');return;}
+  const id=uid();
+  db.semesters.push({id,nome,inicio:document.getElementById('semInicio').value,fim:document.getElementById('semFim').value});
+  currentSemId=id;
+  localStorage.setItem('ll_currentSemId',id);
+  closeModal('modalSem');
+  document.getElementById('semNome').value=''; document.getElementById('semInicio').value=''; document.getElementById('semFim').value='';
+  saveDB(); renderSemestres(); buildSemSel('alunosSemSel',onSemChange);
+}
+
+function switchSem(id){ currentSemId=id; localStorage.setItem('ll_currentSemId',id); buildSemSel('alunosSemSel',onSemChange); renderSemestres(); }
+
+function copyAlunosToSem(fromId){
+  if(!confirm('Copiar todos os alunos deste semestre para o atual? O progresso será zerado.')) return;
+  db.students.filter(s=>s.semId===fromId).forEach(s=>{
+    db.students.push({...s,id:uid(),semId:currentSemId,doneAulas:0,lastClass:null,nextClasses:''});
+  });
+  saveDB(); renderAlunos(); alert('Alunos copiados com sucesso!');
+}
+
+// ═══════════════════════════════════════
+// ALUNO MODAL
+// ═══════════════════════════════════════
+function buildColorGrid(){
+  const g=document.getElementById('colorGrid'); if(!g) return; g.innerHTML='';
+  COLORS.forEach((c,i)=>{
+    const el=document.createElement('div'); el.className='color-opt'+(i===selectedColor?' selected':'');
+    el.style.background=c.bg; el.onclick=()=>{selectedColor=i;buildColorGrid();};
+    g.appendChild(el);
+  });
+}
+
+function openAddAluno(){
+  editingAlunoId=null; selectedColor=0;
+  document.getElementById('modalAlunoTitle').textContent='Novo aluno';
+  document.getElementById('btnDeleteAluno').style.display='none';
+  ['aNome','aHorario','aValor','aPais','aObs'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.getElementById('aNivel').value='A1'; document.getElementById('aTotalAulas').value='20';
+  buildColorGrid(); document.getElementById('modalAluno').classList.add('open');
+}
+
+function openEditAluno(sid){
+  const s=db.students.find(x=>x.id===sid); if(!s) return;
+  editingAlunoId=sid; selectedColor=s.colorIdx||0;
+  document.getElementById('modalAlunoTitle').textContent='Editar aluno';
+  document.getElementById('btnDeleteAluno').style.display='inline-block';
+  document.getElementById('aNome').value=s.nome||''; document.getElementById('aNivel').value=s.nivel||'A1';
+  document.getElementById('aHorario').value=s.horario||''; document.getElementById('aValor').value=s.valor||'';
+  document.getElementById('aPais').value=s.pais||''; document.getElementById('aTotalAulas').value=s.totalAulas||20;
+  document.getElementById('aObs').value=s.obs||'';
+  buildColorGrid(); document.getElementById('modalAluno').classList.add('open');
+}
+
+function saveAluno(){
+  const nome=document.getElementById('aNome').value.trim(); if(!nome){alert('Nome obrigatório.');return;}
+  const data={nome,nivel:document.getElementById('aNivel').value,horario:document.getElementById('aHorario').value.trim(),valor:document.getElementById('aValor').value.trim(),pais:document.getElementById('aPais').value.trim(),totalAulas:parseInt(document.getElementById('aTotalAulas').value)||20,obs:document.getElementById('aObs').value.trim(),colorIdx:selectedColor,ativo:true};
+  if(editingAlunoId){const s=db.students.find(x=>x.id===editingAlunoId);if(s) Object.assign(s,data);}
+  else db.students.push({id:uid(),semId:currentSemId,doneAulas:0,lastClass:null,nextClasses:'',...data});
+  closeModal('modalAluno'); saveDB(); renderAlunos();
+}
+
+function deleteAluno(){
+  if(!editingAlunoId||!confirm('Excluir aluno e todos os dados?')) return;
+  db.students=db.students.filter(s=>s.id!==editingAlunoId); delete db.records[editingAlunoId];
+  closeModal('modalAluno'); saveDB(); renderAlunos();
+}
+
+// ═══════════════════════════════════════
+// BUSCA WEHELPYOU
+// ═══════════════════════════════════════
+let activeCat='ALL';
+
+const lessons=[
+ {src:'BEG', n:'Intro', title:"Intro Class", gram:'—', voc:"greetings and classroom language", cat:'General English'},
+  {src:'BEG', n:'01', title:"The World of English", gram:"to be affirmative, contractions, subject pronouns", voc:"countries", cat:'General English'},
+  {src:'BEG', n:'02', title:"Guess the Country", gram:"verb be negative", voc:"nationalities", cat:'General English'},
+  {src:'BEG', n:'03', title:"Changing Nationalities?", gram:"to be interrogative, short answers", voc:"countries and nationalities", cat:'General English'},
+  {src:'BEG', n:'04', title:"Greetings From Around the World (Review)", gram:"verb be review", voc:"countries, nationalities, colours", cat:'General English'},
+  {src:'BEG', n:'05', title:"In a Hotel", gram:'—', voc:"hotel room items, numbers 1-10, alphabet", cat:'Travel English'},
+  {src:'BEG', n:'06', title:"What's in my Travel Bag", gram:"articles a, an", voc:"things in a travel bag", cat:'Travel English'},
+  {src:'BEG', n:'07', title:"Is it Cheap or Expensive?", gram:"regular plurals", voc:"numbers 20-100, grocery items", cat:'General English'},
+  {src:'BEG', n:'08', title:"What's your favorite?", gram:"possessive adjectives", voc:"favorite things", cat:'General English'},
+  {src:'BEG', n:'09', title:"Famous Families", gram:"possessive case", voc:"family members", cat:'General English'},
+  {src:'BEG', n:'10', title:"Dog Lovers", gram:"adjective order", voc:"adjectives", cat:'General English'},
+  {src:'BEG', n:'11', title:"Breakfast, lunch and dinner", gram:"present simple with have/has", voc:"food and drink items, meals, days of the week", cat:'General English'},
+  {src:'BEG', n:'12', title:"Morning, People", gram:"present simple affirmative (he/she/it)", voc:"daily routine verbs, telling the time", cat:'General English'},
+  {src:'BEG', n:'13', title:"Review Classes 1-12", gram:"review from classes 1–12", voc:'—', cat:'General English'},
+  {src:'BEG', n:'14', title:"How often do you use your phone?", gram:"simple present interrogative", voc:"adverbs of frequency", cat:'General English'},
+  {src:'BEG', n:'15', title:"A Day in the Life", gram:"Present simple negative, present simple review", voc:"jobs", cat:'General English'},
+  {src:'BEG', n:'16', title:"Starting a New Hobby", gram:"question word order with be and other verbs", voc:"hobbies", cat:'General English'},
+  {src:'BEG', n:'17', title:"Breakfast Sandwich", gram:"imperative", voc:"breakfast, cooking", cat:'General English'},
+  {src:'BEG', n:'18', title:"Drama? I Like It!", gram:"Asking/giving opinions; object pronouns", voc:"Film genres", cat:'General English'},
+  {src:'BEG', n:'19', title:"Friends in a restaurant", gram:"Ordering food politely (I’ll have…, with a side of…)", voc:"Food, dishes, menus", cat:'General English'},
+  {src:'BEG', n:'20', title:"Review Classes 14–19", gram:"Review of grammar and vocab (14–19)", voc:"Vocabulary from 14–19", cat:'General English'},
+  {src:'BEG', n:'21', title:"Sports and Workout", gram:"Can / can’t / can…? (ability)", voc:"Sports & workouts", cat:'General English'},
+  {src:'BEG', n:'22', title:"Know your coffee", gram:"Polite requests: Can I have…, Could I have…, I’d like…", voc:"Coffee, sizes, syrups, milk", cat:'General English'},
+  {src:'BEG', n:'23', title:"What Can I Do Here?", gram:"Can/can’t (rules & permission) + role-play", voc:"Public signs", cat:'General English'},
+  {src:'BEG', n:'24', title:"What Are You Wearing Today?", gram:"Present continuous (affirmative)", voc:"Clothes", cat:'General English'},
+  {src:'BEG', n:'25', title:"Surviving the Weather!", gram:"Present continuous (affirmative, negative, questions)", voc:"Clothes, weather, seasons", cat:'General English'},
+  {src:'BEG', n:'26', title:"It’s raining!", gram:"Present simple vs present continuous", voc:"Places in the city", cat:'General English'},
+  {src:'BEG', n:'27', title:"Review Classes 21–26", gram:"Review of functional content (21–26)", voc:"Vocabulary from 21–26", cat:'General English'},
+  {src:'BEG', n:'28', title:"Is there a kitchen?", gram:"There is/are + some/any + a/an", voc:"Parts of the house, home items", cat:'General English'},
+  {src:'BEG', n:'29', title:"They were just babies!", gram:"Past of be (was/were – affirmative)", voc:"Prepositional phrases", cat:'General English'},
+  {src:'BEG', n:'30', title:"When Were You Born?", gram:"Past of be (all forms) + dates", voc:"Dates, months, zodiac signs", cat:'General English'},
+  {src:'BEG', n:'31', title:"My last vacation", gram:"Past simple: regular verbs (+ pronunciation / -ed)", voc:"Travel & vacation vocabulary", cat:'Travel English'},
+  {src:'BEG', n:'32', title:"Let's Celebrate", gram:"past simple irregular verbs", voc:"birthdays", cat:'General English'},
+  {src:'BEG', n:'33', title:"The Story of My Life", gram:"Review of past simple (regular & irregular verbs)", voc:"Life story, stories, vlog, changes, my past, past, past simple verbs (regular & irregular), life in a day", cat:'General English'},
+  {src:'BEG', n:'34', title:"Review Classes 28–33", gram:"Review of grammar from Lessons 28–33", voc:"Vocabulary from Lessons 28–33", cat:'General English'},
+  {src:'BEG', n:'35', title:"I’m Busy!", gram:"Present continuous for future", voc:"Appointments, future arrangements, making an appointment, making plans, schedule, planner", cat:'General English'},
+  {src:'BEG', n:'36', title:"Let’s Travel", gram:"Present continuous for future (recycled/reinforced)", voc:"Travel, trip, going abroad, travel arrangements, future plans, Dubai, desert, camel ride, UAE", cat:'Travel English'},
+  {src:'BEG', n:'37', title:"My Universe", gram:"Word order in questions (to be, do/does, did, can)", voc:"Song, music, Coldplay, BTS, pop, k-pop, question formation", cat:'Songs'},
+  {src:'BEG', n:'38', title:"It’s in the Past!", gram:"Review of verb tenses", voc:"Objects that were replaced by the cellphone", cat:'General English'},
+  {src:'BEG', n:'39', title:"Review Classes 35-38", gram:"Review of Lessons 35–38", voc:"Vocabulary from Lessons 35–38", cat:'General English'},
+  {src:'BEG', n:'40', title:"Final Review", gram:"Final course grammar review", voc:"Global vocabulary from the course", cat:'General English'},
+  {src:'SC', n:'01', title:"Animals and pets", gram:'—', voc:'—', cat:'Speaking Club'},
+  {src:'SC', n:'02', title:"Books and reading", gram:'—', voc:'—', cat:'Speaking Club'},
+  {src:'SC', n:'03', title:"Clothes", gram:'—', voc:'—', cat:'Speaking Club'},
+  {src:'SC', n:'04', title:"Digital Revolution", gram:'—', voc:'—', cat:'Speaking Club'},
+  {src:'SC', n:'05', title:"Elections", gram:'—', voc:'—', cat:'Speaking Club'},
+  {src:'SC', n:'06', title:"Free time", gram:'—', voc:'—', cat:'Speaking Club'},
+  {src:'SC', n:'07', title:"Getting to know you", gram:'—', voc:'—', cat:'Speaking Club'},
+  {src:'SC', n:'08', title:"Health!", gram:'—', voc:'—', cat:'Speaking Club'},
+  {src:'SC', n:'09', title:"Oktoberfest", gram:'—', voc:'—', cat:'Speaking Club'},
+  {src:'SC', n:'10', title:"Inventions", gram:'—', voc:'—', cat:'Speaking Club'},
+  {src:'SC', n:'11', title:"Job Interview", gram:'—', voc:'—', cat:'Speaking Club'},
+  {src:'SC', n:'12', title:"Learning Strategies", gram:'—', voc:'—', cat:'Speaking Club'},
+  {src:'SC', n:'13', title:"Money and Shopping", gram:'—', voc:'—', cat:'Speaking Club'},
+  {src:'SC', n:'14', title:"News", gram:'—', voc:'—', cat:'Speaking Club'},
+  {src:'SC', n:'15', title:"Phrasal Verbs", gram:'—', voc:'—', cat:'Speaking Club'},
+  {src:'SC', n:'16', title:"Quality of life", gram:'—', voc:'—', cat:'Speaking Club'},
+  {src:'SC', n:'17', title:"Travel", gram:'—', voc:'—', cat:'Speaking Club'},
+  {src:'SC', n:'18', title:"Video Games", gram:'—', voc:'—', cat:'Speaking Club'},
+  {src:'SC', n:'19', title:"United States Culture", gram:'—', voc:'—', cat:'Speaking Club'},
+  {src:'SC', n:'20', title:"Women", gram:'—', voc:'—', cat:'Speaking Club'},
+  {src:'SC', n:'21', title:"Supernatural and Superstitions", gram:'—', voc:'—', cat:'Speaking Club'},
+  {src:'SC', n:'22', title:"Abbreviations and Acronyms", gram:'—', voc:'—', cat:'Speaking Club'},
+  {src:'SC', n:'23', title:"Bucket List", gram:'—', voc:'—', cat:'Speaking Club'},
+  {src:'SC', n:'24', title:"Comparatives", gram:'—', voc:'—', cat:'Speaking Club'},
+  {src:'SC', n:'25', title:"Do Make", gram:'—', voc:'—', cat:'Speaking Club'},
+  {src:'SC', n:'26', title:"Environmental Problems", gram:'—', voc:'—', cat:'Speaking Club'},
+  {src:'SC', n:'27', title:"Future Plans", gram:'—', voc:'—', cat:'Speaking Club'},
+  {src:'SC', n:'28', title:"Growth Mindset", gram:'—', voc:'—', cat:'Speaking Club'},
+  {src:'SC', n:'29', title:"In Love with Phrasal Verbs", gram:'—', voc:'—', cat:'Speaking Club'},
+  {src:'SC', n:'30', title:"Heroes", gram:'—', voc:'—', cat:'Speaking Club'},
+  {src:'SC', n:'31', title:"Idiomatic Expressions", gram:'—', voc:'—', cat:'Speaking Club'},
+  {src:'SC', n:'32', title:"Jokes and Puns", gram:'—', voc:'—', cat:'Speaking Club'},
+  {src:'SC', n:'33', title:"Korean Culture", gram:'—', voc:'—', cat:'Speaking Club'},
+  {src:'SC', n:'34', title:"Teens and Parents- versão teen", gram:'—', voc:'—', cat:'Speaking Club'},
+  {src:'SC', n:'35', title:"Teen and Parents- versão parents", gram:'—', voc:'—', cat:'Speaking Club'},
+  {src:'SC', n:'36', title:"Easter", gram:'—', voc:'—', cat:'Speaking Club'},
+  {src:'SC', n:'37', title:"Never Have I - Present Perfect", gram:'—', voc:'—', cat:'Speaking Club'},
+  {src:'SC', n:'38', title:"Past Simple", gram:'—', voc:'—', cat:'Speaking Club'},
+  {src:'SC', n:'39', title:"Mothers", gram:'—', voc:'—', cat:'Speaking Club'},
+  {src:'SC', n:'40', title:"Superlatives", gram:'—', voc:'—', cat:'Speaking Club'},
+  {src:'SC', n:'41', title:"Small Talk", gram:'—', voc:'—', cat:'Speaking Club'},
+  {src:'SC', n:'42', title:"Conditionals", gram:'—', voc:'—', cat:'Speaking Club'},
+  {src:'SC', n:'43', title:"Giving your opinion", gram:'—', voc:'—', cat:'Speaking Club'},
+  {src:'SC', n:'44', title:"British and American English", gram:'—', voc:'—', cat:'Speaking Club'},
+  {src:'SC', n:'45', title:"Food", gram:'—', voc:'—', cat:'Speaking Club'},
+  {src:'SC', n:'46', title:"Verbs + Prepositions", gram:'—', voc:'—', cat:'Speaking Club'},
+  {src:'SC', n:'47', title:"To vs For", gram:'—', voc:'—', cat:'Speaking Club'},
+  {src:'SC', n:'48', title:"TV show", gram:'—', voc:'—', cat:'Speaking Club'},
+  {src:'SC', n:'49', title:"Personality traits", gram:'—', voc:'—', cat:'Speaking Club'},
+  {src:'SC', n:'50', title:"Celebrations around the world", gram:'—', voc:'—', cat:'Speaking Club'},
+  {src:'SC', n:'51', title:"False Friends", gram:'—', voc:'—', cat:'Speaking Club'},
+  {src:'SC', n:'52', title:"Movies and Cinema", gram:'—', voc:'—', cat:'Speaking Club'},
+  {src:'SC', n:'53', title:"Christmas and New Year’s resolutions", gram:'—', voc:'—', cat:'Speaking Club'},
+  {src:'SC', n:'54', title:"Media Influence", gram:'—', voc:'—', cat:'Speaking Club'},
+  {src:'SC', n:'55', title:"Fashion and Style", gram:'—', voc:'—', cat:'Speaking Club'},
+  {src:'SC', n:'56', title:"This or that?", gram:'—', voc:'—', cat:'Speaking Club'},
+  {src:'SC', n:'57', title:"My hometown", gram:'—', voc:'—', cat:'Speaking Club'},
+  {src:'SC', n:'58', title:"Soccer", gram:'—', voc:'—', cat:'Speaking Club'},
+  {src:'SC', n:'59', title:"Emotional Intelligence", gram:'—', voc:'—', cat:'Speaking Club'},
+  {src:'SC', n:'60', title:"Physical Appearance", gram:'—', voc:'—', cat:'Speaking Club'},
+  {src:'SC', n:'61', title:"Elevador Pitch", gram:'—', voc:'—', cat:'Speaking Club'},
+  {src:'SC', n:'62', title:"Soft Skills", gram:'—', voc:'—', cat:'Speaking Club'},
+  {src:'SC', n:'63', title:"Halloween", gram:'—', voc:'—', cat:'Speaking Club'},
+  {src:'SC', n:'64', title:"Thanksgiving and Gratitude", gram:'—', voc:'—', cat:'Speaking Club'},
+  {src:'SC', n:'65', title:"Describing pictures", gram:'—', voc:'—', cat:'Speaking Club'},
+  {src:'SC', n:'66', title:"Black Friday", gram:'—', voc:'—', cat:'Speaking Club'},
+  {src:'SC', n:'67', title:"Coming Back from a Trip", gram:'—', voc:'—', cat:'Speaking Club'},
+  {src:'SC', n:'68', title:"Artificial Intelligence", gram:'—', voc:'—', cat:'Speaking Club'},
+  {src:'SC', n:'69', title:"Expressing opinions", gram:'—', voc:'—', cat:'Speaking Club'},
+  {src:'SC', n:'70', title:"Color idioms", gram:'—', voc:'—', cat:'Speaking Club'},
+  {src:'SC', n:'71', title:"Business Phrasal Verbs", gram:'—', voc:'—', cat:'Speaking Club'},
+  {src:'SC', n:'72', title:"Pop Culture", gram:'—', voc:'—', cat:'Speaking Club'},
+  {src:'SC', n:'73', title:"Comparing Holiday Destinations", gram:'—', voc:'—', cat:'Speaking Club'},
+  {src:'SC', n:'74', title:"Cooking", gram:'—', voc:'—', cat:'Speaking Club'},
+  {src:'SC', n:'75', title:"Valentine's Day", gram:'—', voc:'—', cat:'Speaking Club'},
+  {src:'SC', n:'76', title:"Should - Giving Advice", gram:'—', voc:'—', cat:'Speaking Club'},
+  {src:'SC', n:'77', title:"Group Discussions", gram:'—', voc:'—', cat:'Speaking Club'},
+  {src:'SC', n:'78', title:"Goals and Plans", gram:'—', voc:'—', cat:'Speaking Club'},
+  {src:'SC', n:'79', title:"Comparing Holiday Destinations", gram:'—', voc:'—', cat:'Speaking Club'},
+  {src:'SC', n:'80', title:"Cooking", gram:'—', voc:'—', cat:'Speaking Club'},
+  {src:'SC', n:'81', title:"Valentine's Day", gram:'—', voc:'—', cat:'Speaking Club'},
+  {src:'SC', n:'82', title:"Should - Giving Advice", gram:'—', voc:'—', cat:'Speaking Club'},
+  {src:'SC', n:'83', title:"Group Discussions", gram:'—', voc:'—', cat:'Speaking Club'},
+  {src:'SC', n:'84', title:"I'm Brazilian!", gram:'—', voc:'—', cat:'Speaking Club'},
+  {src:'SC', n:'85', title:"Ice Breakers", gram:'—', voc:'—', cat:'Speaking Club'},
+  {src:'SC', n:'86', title:"St Patrick's", gram:'—', voc:'—', cat:'Speaking Club'},
+  {src:'SC', n:'87', title:"Weather", gram:'—', voc:'—', cat:'Speaking Club'},
+  {src:'SC', n:'88', title:"Music", gram:'—', voc:'—', cat:'Speaking Club'},
+  {src:'SC', n:'89', title:"My Professional Profile!", gram:'—', voc:'—', cat:'Speaking Club'},
+  {src:'BAS', n:'01', title:"An Ice Cream Lesson", gram:"countable and uncountable nouns", voc:"toppings and flavours", cat:'General English'},
+  {src:'BAS', n:'02', title:"How to Style a White T-shirt", gram:"adjectives to describe clothes", voc:"clothes", cat:'General English'},
+  {src:'BAS', n:'03', title:"Anne with an E: Am I talking too much?", gram:"Use of pronouns I or me", voc:"related to the extract", cat:'Series/Movies'},
+  {src:'BAS', n:'04', title:"Snoopy: A homemade Valentine", gram:"can't / can", voc:"related to valentine's", cat:'General English'},
+  {src:'BAS', n:'05', title:"Great Day", gram:"present simple - verb to be", voc:"related to the extract", cat:'General English'},
+  {src:'BAS', n:'06', title:"I Accidentally Became A Meme", gram:"past simple x past continuous", voc:"related to the extract", cat:'General English'},
+  {src:'BAS', n:'07', title:"Functional Plus - Ordering food", gram:"would, could, can for ordering politily", voc:"food", cat:'Functional Skills'},
+  {src:'BAS', n:'08', title:"A Beginner's Guide to American Football", gram:"collocations with do, play, go", voc:"sports, football", cat:'General English'},
+  {src:'BAS', n:'09', title:"Student Compares his Autism with Lego", gram:"\"Like\" for comparison", voc:"everyday objects, technology", cat:'General English'},
+  {src:'BAS', n:'10', title:"Finding Accommodation", gram:"present simple: there to be", voc:"related to booking an accomodation", cat:'Travel English'},
+  {src:'BAS', n:'11', title:"Saint Patrick's Day", gram:"Simple Past, Subject and Object Pronouns", voc:"related to the extract", cat:'General English'},
+  {src:'BAS', n:'12', title:"Academy Awards Through the Years", gram:"superlatives", voc:"measurements, vocabulary about films", cat:'General English'},
+  {src:'BAS', n:'13', title:"Packing a Suitcase", gram:"present simple: there to be", voc:"about packing; synonyms", cat:'Travel English'},
+  {src:'BAS', n:'14', title:"Coloring Eggs", gram:"will for future", voc:"colours, cooking verbs", cat:'General English'},
+  {src:'BAS', n:'15', title:"Smarter in Seconds: What is Ramadan?", gram:"be able to", voc:"cultural awareness", cat:'General English'},
+  {src:'BAS', n:'16', title:"Be a Mr Jansen", gram:"past simple: irregular verbs", voc:"school subjects", cat:'General English'},
+  {src:'BAS', n:'17', title:"If We Were Honest Making Plans", gram:"going to for plans", voc:"plans", cat:'General English'},
+  {src:'BAS', n:'18', title:"May the fourth be with you", gram:"—", voc:"ordinal numbers, saying dates", cat:'General English'},
+  {src:'BAS', n:'19', title:"Hair Love", gram:"—", voc:"family, diversity, hair care", cat:'General English'},
+  {src:'BAS', n:'20', title:"Nancy Mulligan, by Ed Sheeran", gram:"irregular verbs - past simple", voc:"family members", cat:'Songs'},
+  {src:'BAS', n:'21', title:"Shawn Mendes - Stitches", gram:"—", voc:"idiomatic expressions, body", cat:'Songs'},
+  {src:'BAS', n:'22', title:"Spider-Man", gram:"word order in questions", voc:"personality traits", cat:'Series/Movies'},
+  {src:'BAS', n:'23', title:"Break My Heart (Dua Lipa)", gram:"verb tense review", voc:"collocations", cat:'Songs'},
+  {src:'BAS', n:'24', title:"I want it that way - Backstreet Boys", gram:"verb to be - simple present", voc:"related to extract", cat:'Songs'},
+  {src:'BAS', n:'25', title:"There is no right or wrong time. Just start.", gram:"superlatives + review question words", voc:"—", cat:'General English'},
+  {src:'BAS', n:'26', title:"Stranger Things 4: Official Trailer", gram:"have for possession", voc:"related to film blogs", cat:'Series/Movies'},
+  {src:'BAS', n:'27', title:"Heartstopper Characters", gram:"possessive 's", voc:"routine activities", cat:'Series/Movies'},
+  {src:'BAS', n:'28', title:"4th of July", gram:"—", voc:"related to the Independence Day", cat:'General English'},
+  {src:'BAS', n:'29', title:"How to play beach tennis", gram:"comparative and superlative adjectives", voc:"sports", cat:'General English'},
+  {src:'BAS', n:'30', title:"The Sorting Ceremony - Harry Potter", gram:"reflexive pronouns", voc:"related to the extract", cat:'Series/Movies'},
+  {src:'BAS', n:'31', title:"Expensive Taste Test: Gaten Matarazzo", gram:"adverbs of frequency", voc:"objects", cat:'General English'},
+  {src:'BAS', n:'32', title:"Paul McCartney Carpool Karaoke", gram:"past simple - verb to be", voc:"related to the extract", cat:'Songs'},
+  {src:'BAS', n:'33', title:"5 reasons why you shouldn't skip breakfast", gram:"enough", voc:"food habits", cat:'General English'},
+  {src:'BAS', n:'34', title:"Making S'Mores", gram:"adjectives or adverbs", voc:"food/ kitchen utensils", cat:'General English'},
+  {src:'BAS', n:'35', title:"As it was by Harry Styles", gram:"The past of be (review)", voc:"—", cat:'Songs'},
+  {src:'BAS', n:'36', title:"57 Years Apart", gram:"—", voc:"related to ageing", cat:'General English'},
+  {src:'BAS', n:'37', title:"How To Take Afternoon Tea Like a Real Brit", gram:"Imperatives", voc:"afternoon tea food and utensils", cat:'General English'},
+  {src:'BAS', n:'38', title:"London vs Paris", gram:"—", voc:"numbers", cat:'Travel English'},
+  {src:'BAS', n:'39', title:"FIFA World Cup Qatar 2022", gram:"word order in questions (Simple Present)", voc:"appearance, countries, nationalities", cat:'General English'},
+  {src:'BAS', n:'40', title:"Cat Is Obsessed With His Tiny Love Bird", gram:"should/shouldn't for ideal and advice", voc:"related to animals", cat:'General English'},
+  {src:'BAS', n:'41', title:"Join your favorite TV family", gram:"Possessive adjectives and genitive case", voc:"family members", cat:'Series/Movies'},
+  {src:'BAS', n:'42', title:"Marshmello: Draw My Life", gram:"Time Prepositions: in, on, at.", voc:"—", cat:'General English'},
+  {src:'BAS', n:'43', title:"Ghostbuster Scene - Stranger Things 2", gram:"simple past", voc:"related to the extract", cat:'Series/Movies'},
+  {src:'BAS', n:'44', title:"Jack O'Lantern: Halloween Stories", gram:"There was, there were.", voc:"Halloween vocabulary", cat:'General English'},
+  {src:'BAS', n:'45', title:"What is your earliest childhood memory?", gram:"used to", voc:"related to childhood", cat:'General English'},
+  {src:'BAS', n:'46', title:"Go Blue on World Children’s Day", gram:"Everything, everyone, everywhere", voc:"—", cat:'General English'},
+  {src:'BAS', n:'47', title:"The History of the first Thanksgiving", gram:"suffix -ful", voc:"related to Thanksgiving", cat:'General English'},
+  {src:'BAS', n:'48', title:"Black Friday", gram:"—", voc:"collocations", cat:'General English'},
+  {src:'BAS', n:'49', title:"Coldplay - Paradise", gram:"review the simple past", voc:"related to the song", cat:'Songs'},
+  {src:'BAS', n:'50', title:"Friends - Ross shopping", gram:"modal verbs can and would for shopping", voc:"clothes, fabrics", cat:'Series/Movies'},
+  {src:'BAS', n:'51', title:"Dog Who’s Obsessed With Ice Skating", gram:"present simple", voc:"related to the extract", cat:'General English'},
+  {src:'BAS', n:'52', title:"What's in My Bag", gram:"frequency adverbs", voc:"everyday objects", cat:'General English'},
+  {src:'BAS', n:'53', title:"Bad Habits (Ed Sheeran)", gram:"present simple", voc:"related to the extract", cat:'Songs'},
+  {src:'BAS', n:'54', title:"Catch high-flying Hannah if you can!", gram:"—", voc:"related to the extract", cat:'General English'},
+  {src:'BAS', n:'55', title:"Let me introduce myself", gram:"—", voc:"related to the extract", cat:'General English'},
+  {src:'BAS', n:'56', title:"Different Kinds of Students on Zoom", gram:"present perfect x past simple", voc:"personality traits", cat:'General English'},
+  {src:'BAS', n:'57', title:"Happy Christmas | Harry Potter", gram:"present continuous", voc:"Christmas", cat:'Series/Movies'},
+  {src:'BAS', n:'58', title:"Why Do People Make New Year's Resolutions?", gram:"—", voc:"good/bad habits", cat:'General English'},
+  {src:'BAS', n:'59', title:"Wednesday's Addams' New Home", gram:"question words, present perfect", voc:"school subjects", cat:'Series/Movies'},
+  {src:'BAS', n:'60', title:"Before they go blind visiting the world", gram:"Infinitive of purpose", voc:"travelling", cat:'Travel English'},
+  {src:'BAS', n:'61', title:"British backpacker becomes accidental cook", gram:"verbs to describe the daily routine", voc:"times on the clock", cat:'Travel English'},
+  {src:'BAS', n:'62', title:"Amy finds her wedding dress", gram:"Present Simple - Interrogative Form", voc:"related to the extract", cat:'Series/Movies'},
+  {src:'BAS', n:'63', title:"Too Tall For a Tiny House", gram:"review present simple", voc:"house parts and furniture", cat:'Series/Movies'},
+  {src:'BAS', n:'64', title:"Opening Scene | Enola Holmes", gram:"past simple", voc:"related to the extract", cat:'Series/Movies'},
+  {src:'BAS', n:'65', title:"CHIS - Some Things Abt Me", gram:"subject pronouns, possessive adjectives.", voc:"personal information", cat:'General English'},
+  {src:'BAS', n:'66', title:"Lego", gram:"Be or Do?", voc:"Lego bricks vocabulary", cat:'General English'},
+  {src:'BAS', n:'67', title:"Guess the name of food", gram:"—", voc:"food vocabulary", cat:'General English'},
+  {src:'BAS', n:'68', title:"TikTok Challenge", gram:"Adjectives", voc:"Things in the House", cat:'General English'},
+  {src:'BAS', n:'69', title:"14 Amazing Things about Dogs", gram:"subject and object pronouns", voc:"parts of a dog", cat:'General English'},
+  {src:'BAS', n:'70', title:"Grammar Plus - Verb To Be", gram:"Simple Present of Be", voc:"—", cat:'General English'},
+  {src:'BAS', n:'71', title:"Flowers, Miley Cyrus", gram:"can for abilities", voc:"actions", cat:'Songs'},
+  {src:'BAS', n:'72', title:"Teen Drummer", gram:"can, can't", voc:"jobs, numbers", cat:'General English'},
+  {src:'BAS', n:'73', title:"A day at the beach", gram:"—", voc:"Things at the beach", cat:'General English'},
+  {src:'BAS', n:'74', title:"Amsterdam", gram:"Present Continuous for Future Arrangements", voc:"tourist places", cat:'Travel English'},
+  {src:'BAS', n:'75', title:"Making cubanos", gram:"—", voc:"food and ingredients", cat:'General English'},
+  {src:'BAS', n:'76', title:"Barbie | Teaser Trailer", gram:"—", voc:"—", cat:'Series/Movies'},
+  {src:'BAS', n:'77', title:"Outer Banks Cast Finds Out If They’re Pogues", gram:"language to agree and disagree", voc:"adjectives to describe personality", cat:'Series/Movies'},
+  {src:'BAS', n:'78', title:"Unbelievable shocking cultural norms", gram:"modal verbs for prohibitions, obligations", voc:"countries", cat:'Travel English'},
+  {src:'BAS', n:'79', title:"Pizza Facts", gram:"countable and uncountable nouns", voc:"pizza ingredients", cat:'General English'},
+  {src:'BAS', n:'80', title:"Giving Directions The Simpsons", gram:"—", voc:"directions", cat:'Travel English'},
+  {src:'BAS', n:'81', title:"Friends: Getting to the Hospital", gram:"—", voc:"alphabet, diseases, hospital", cat:'Functional Skills'},
+  {src:'BAS', n:'82', title:"My Workout Schedule", gram:"adverbs of frequency", voc:"body parts", cat:'General English'},
+  {src:'BAS', n:'83', title:"Dear British Weather,", gram:"word transformation", voc:"weather terminology", cat:'General English'},
+  {src:'BAS', n:'84', title:"Queen Charlotte", gram:"word transformation", voc:"formal vs informal vocabulary", cat:'Series/Movies'},
+  {src:'BAS', n:'85', title:"The Little Mermaid - Under The Sea", gram:"Prepositions of Place", voc:"ocean and sea-animals", cat:'Series/Movies'},
+  {src:'BAS', n:'86', title:"The Super Mario Bros. Movie", gram:"Simple Present and the Present Continuous", voc:"clothes and accessories", cat:'Series/Movies'},
+  {src:'BAS', n:'87', title:"No foundation Makeup look", gram:"Simple Present", voc:"related to makeup", cat:'General English'},
+  {src:'BAS', n:'88', title:"Nicola Coughlan Tries Brazilian Snacks", gram:"Sense Verbs", voc:"food and snacks", cat:'General English'},
+  {src:'BAS', n:'89', title:"It's written in the stars", gram:"Verb To Be", voc:"months, zodiac signs", cat:'General English'},
+  {src:'BAS', n:'90', title:"We don't know what will happen", gram:"Will (The Simple Future)", voc:"Related to football", cat:'General English'},
+  {src:'BAS', n:'91', title:"Kevin Hart’s Most Relatable Moments", gram:"Present Continuous", voc:"related to movies", cat:'General English'},
+  {src:'BAS', n:'92', title:"One Piece", gram:"Verb “will” and contractions", voc:"Related to the subject", cat:'General English'},
+  {src:'BAS', n:'93', title:"Punky Brewster", gram:"Past Simple - Questions", voc:"Related to household chores", cat:'Series/Movies'},
+  {src:'BAS', n:'94', title:"How to Play Top Trumps", gram:"—", voc:"Numbers from 1-1000", cat:'General English'},
+  {src:'BAS', n:'95', title:"Marta", gram:"Question Words", voc:"Related to sports", cat:'General English'},
+  {src:'BAS', n:'96', title:"At the hair salon", gram:"—", voc:"Related to hairstyles", cat:'General English'},
+  {src:'BAS', n:'97', title:"Waking Up With Bruna Marquezine", gram:"—", voc:"Related to routines", cat:'General English'},
+  {src:'BAS', n:'98', title:"Dua Lipa - Levitating", gram:"Irregular Plural and Review of There To Be", voc:"Body parts", cat:'Songs'},
+  {src:'BAS', n:'99', title:"Movie Review - Indiana Jones", gram:"—", voc:"Related to movies", cat:'Series/Movies'},
+  {src:'BAS', n:'100', title:"I Put A Spell On You | Hocus Pocus", gram:"Possessive Pronouns", voc:"Related to Halloween", cat:'Series/Movies'},
+  {src:'BAS', n:'101', title:"Train with Joan", gram:"Review Past Simple and -ed Pronunciation", voc:"Gyms and healthy lifestyles", cat:'General English'},
+  {src:'BAS', n:'102', title:"Top 5 Things To Do in Bahia", gram:"Present Perfect", voc:"Tourism", cat:'Travel English'},
+  {src:'BAS', n:'103', title:"My patch collection", gram:"Demonstrative Pronouns", voc:"Related to the subject", cat:'General English'},
+  {src:'BAS', n:'104', title:"The Blind Side Thanksgiving", gram:"Shall", voc:"Thanksgiving", cat:'Series/Movies'},
+  {src:'BAS', n:'105', title:"How to Play Basketball", gram:"Present Simple Review", voc:"Basketball", cat:'General English'},
+  {src:'BAS', n:'106', title:"What is an advent calendar?", gram:"—", voc:"Christmas", cat:'General English'},
+  {src:'BAS', n:'107', title:"We're Going To Ibiza - Vengaboys", gram:"Going to for future plans", voc:"Related to the song’s lyrics", cat:'Songs'},
+  {src:'BAS', n:'108', title:"New Year Resolutions - Simon's Cat", gram:"—", voc:"New Year’s Resolutions", cat:'General English'},
+  {src:'BAS', n:'109', title:"Hip hop fan goes viral after 50 Cent gig", gram:"Reflexive Pronouns", voc:"Music and concerts", cat:'General English'},
+  {src:'BAS', n:'110', title:"Mac and Cheese", gram:"Word Formation", voc:"Recipes", cat:'General English'},
+  {src:'BAS', n:'111', title:"The English language around the world", gram:"Present Simple Review", voc:"Languages and countries", cat:'General English'},
+  {src:'BAS', n:'112', title:"The history of tea", gram:"Past Simple (regular/irregular)", voc:"Tea, historical facts", cat:'General English'},
+  {src:'BAS', n:'113', title:"This is Me", gram:"Present Simple / Expressing feelings", voc:"Personal traits, identity", cat:'General English'},
+  {src:'BAS', n:'114', title:"What's your morning routine like?", gram:"Adverbs of frequency", voc:"Daily routines, morning habits", cat:'General English'},
+  {src:'BAS', n:'115', title:"Ordering at a coffee shop", gram:"Can I have / I'd like", voc:"Coffee, snacks, prices", cat:'Functional Skills'},
+  {src:'BAS', n:'116', title:"Review Classes 101-115", gram:"Grammar review (101-115)", voc:"Vocabulary consolidation", cat:'General English'},
+  {src:'BAS', n:'117', title:"What can Lady Gaga do?", gram:"Can for Abilities", voc:"Abilities", cat:'General English'},
+  {src:'BAS', n:'118', title:"If Cute Babies Competed in the Olympic Games", gram:"Verbs + Gerund or Infinitive", voc:"Sports", cat:'General English'},
+  {src:'BAS', n:'119', title:"How to Play UNO", gram:"Article 'the'", voc:"Card Games", cat:'General English'},
+  {src:'BAS', n:'120', title:"Change a little, change a lot | McDonald's", gram:"Countable and Uncountable nouns", voc:"Food and Ingredients", cat:'General English'},
+  {src:'BAS', n:'121', title:"The evolution of video games", gram:"Past Simple vs Present Simple", voc:"Gaming, technology", cat:'General English'},
+  {src:'BAS', n:'122', title:"Healthy habits, healthy life", gram:"Should / Shouldn't for advice", voc:"Habits, health, routines", cat:'General English'},
+  {src:'BAS', n:'123', title:"At the airport check-in", gram:"Polite requests: Could I, May I", voc:"Airport, luggage, travel", cat:'Travel English'},
+  {src:'BAS', n:'124', title:"Review Classes 117-123", gram:"Grammar consolidation", voc:"Vocabulary review", cat:'General English'},
+  {src:'BAS', n:'125', title:"Curiosities about Taylor Swift", gram:"Genitive Case ('s) review", voc:"Music, fame, pop culture", cat:'Songs'},
+  {src:'BAS', n:'126', title:"How to make a traditional English breakfast", gram:"Sequencers (First, Then, After that)", voc:"Cooking, food, ingredients", cat:'General English'},
+  {src:'BAS', n:'127', title:"Kids Draw And Describe Their Moms", gram:"Third Person Singular", voc:"Daily routines, describing appearance", cat:'General English'},
+  {src:'BAS', n:'128', title:"PlayStation One Curiosities", gram:"Verb to be in the past", voc:"Retro video games", cat:'General English'},
+  {src:'BAS', n:'129', title:"Benson Boone - Beautiful Things", gram:"Have + got structure", voc:"Beautiful Things’ Lyrics", cat:'Songs'},
+  {src:'BAS', n:'130', title:"Hugs Café - Down Syndrome", gram:"Modal verbs can and could", voc:"Related to the subject", cat:'General English'},
+  {src:'BAS', n:'131', title:"Social media: Good or bad?", gram:"Expressing opinions, contrast connectors", voc:"Apps, internet, communication", cat:'General English'},
+  {src:'BAS', n:'132', title:"Planning a weekend getaway", gram:"Going to vs Will", voc:"Travel, destinations, booking", cat:'Travel English'},
+  {src:'BAS', n:'133', title:"In a clothing store", gram:"Too / Enough", voc:"Clothes, sizes, shopping", cat:'Functional Skills'},
+  {src:'BAS', n:'134', title:"Review Classes 127-133", gram:"Grammar review", voc:"Vocabulary review", cat:'General English'},
+  {src:'BAS', n:'135', title:"All My Loving - The Beatles", gram:"Will For Future", voc:"All My Loving lyrics", cat:'Songs'},
+  {src:'BAS', n:'136', title:"Feelings with Inside Out 2", gram:"Plural of nouns", voc:"Feelings and emotions", cat:'Series/Movies'},
+  {src:'BAS', n:'137', title:"What does it mean to be American?", gram:"Past Simple Review", voc:"America and immigration", cat:'General English'},
+  {src:'BAS', n:'138', title:"Books That Come From Games", gram:"For and To", voc:"Books and video games", cat:'General English'},
+  {src:'BAS', n:'139', title:"Famous landmarks around the world", gram:"Passive Voice intro / Superlatives", voc:"Monuments, travel, geography", cat:'Travel English'},
+  {src:'BAS', n:'140', title:"My favorite movie genre", gram:"Object Pronouns / Expressing preferences", voc:"Movies, cinema, adjectives", cat:'Series/Movies'},
+  {src:'BAS', n:'141', title:"Review Classes 135-140", gram:"Grammar and vocabulary review", voc:"Consolidation", cat:'General English'},
+  {src:'BAS', n:'142', title:"The story behind Halloween traditions", gram:"Past Simple review / Passive Voice intro", voc:"Halloween, folklore, customs", cat:'General English'},
+  {src:'BAS', n:'143', title:"Review Classes 135-142", gram:"Grammar consolidation", voc:"Vocabulary review", cat:'General English'},
+  {src:'BAS', n:'144', title:"Gordon Ramsay and Service Manners", gram:"Being Polite", voc:"Food, restaurants", cat:'General English'},
+  {src:'BAS', n:'145', title:"Snow White and the Seven Dwarfs: Reborn", gram:"Using adjectives to Describe Scenes", voc:"Related to the movie", cat:'Series/Movies'},
+  {src:'BAS', n:'146', title:"How to spend 4 days in Rio de Janeiro?", gram:"Will Vs. Going To", voc:"Travelling and tourism", cat:'Travel English'},
+  {src:'BAS', n:'147', title:"Baby, Bye Bye Bye", gram:"Present Continuous For Future Actions", voc:"Baby Bye Bye lyrics", cat:'Songs'},
+  {src:'BAS', n:'148', title:"The true cost of fast fashion", gram:"Active vs Passive Voice review", voc:"Clothes, environment, sustainability", cat:'General English'},
+  {src:'BAS', n:'149', title:"Top places to visit in Japan", gram:"Present Perfect with ever/never", voc:"Tourism, cultural traditions", cat:'Travel English'},
+  {src:'BAS', n:'150', title:"At a traditional street market", gram:"Quantifiers: Much, Many, A lot of", voc:"Food, bargaining, shopping", cat:'Functional Skills'},
+  {src:'BAS', n:'151', title:"Billie Eilish - Ocean Eyes", gram:"Present Simple x Past Simple review", voc:"Metaphors, feelings, lyrics", cat:'Songs'},
+  {src:'BAS', n:'152', title:"Review Classes 144-151", gram:"Grammar and vocabulary consolidation", voc:"Review core content", cat:'General English'},
+  {src:'BAS', n:'153', title:"Over Silent Hills", gram:"Present Simple (Review)", voc:"Horror stories", cat:'General English'},
+  {src:'BAS', n:'154', title:"Young Sheldon: First Day of High School", gram:"—", voc:"Related to the subject", cat:'Series/Movies'},
+  {src:'BAS', n:'155', title:"Writing Narratives - Last Kiss", gram:"Review Past Simple Verbs", voc:"Last Kiss lyrics", cat:'Songs'},
+  {src:'BAS', n:'156', title:"A Moving Story About Gratitude", gram:"—", voc:"Words to say thank you", cat:'General English'},
+  {src:'BAS', n:'157', title:"Home Alone at Christmas", gram:"Imperative review", voc:"Christmas", cat:'Series/Movies'},
+  {src:'BAS', n:'158', title:"The true story behind Black Friday", gram:"Present Simple x Past Simple review", voc:"Shopping, consumerism, retail", cat:'General English'},
+  {src:'BAS', n:'159', title:"Top 5 Christmas markets in Europe", gram:"Superlatives / Prepositions of place", voc:"Christmas traditions, tourism, travel", cat:'Travel English'},
+  {src:'BAS', n:'160', title:"Ordering Christmas dinner", gram:"Modal verbs for requests (Would like, Could I)", voc:"Food, holiday dishes, ordering", cat:'Functional Skills'},
+  {src:'BAS', n:'161', title:"Coldplay - Viva La Vida", gram:"Past Simple (regular and irregular verbs)", voc:"History, power, metaphors, lyrics", cat:'Songs'},
+  {src:'BAS', n:'162', title:"Review Classes 153-161", gram:"Grammar and vocabulary consolidation", voc:"Core content review", cat:'General English'},
+  {src:'BAS', n:'163', title:"What happened to the Dinosaurs", gram:"Numbers", voc:"Related to the topic", cat:'General English'},
+  {src:'BAS', n:'164', title:"I'm still here", gram:"Indefinite Pronouns", voc:"General vocabulary", cat:'Series/Movies'},
+  {src:'BAS', n:'165', title:"The Benefits of Weekend Exercise", gram:"Adverbs of frequency and manner", voc:"Related to the subject", cat:'General English'},
+  {src:'BAS', n:'166', title:"American Presidents", gram:"Comparative and superlative form", voc:"Related to the subject", cat:'General English'},
+  {src:'BAS', n:'173', title:"How to Play Mahjong", gram:"Imperatives, modals of obligation", voc:"Board and card games", cat:'General English'},
+  {src:'BAS', n:'174', title:"Hello, I'm Ameca", gram:"—", voc:"Emotions and Behaviors", cat:'General English'},
+  {src:'BAS', n:'175', title:"Millie Bobby Brown Learns Brazilian Idioms", gram:"—", voc:"Idiomatic expressions", cat:'General English'},
+  {src:'BAS', n:'182', title:"It’s Rock Day, Baby!", gram:"Possessive pronouns", voc:"Music and rock band-related words", cat:'General English'},
+  {src:'BAS', n:'183', title:"The Chosen: Who was Jesus?", gram:"—", voc:"Related to the topic", cat:'Series/Movies'},
+  {src:'BAS', n:'184', title:"Does romance still exist?", gram:"Present Perfect", voc:"Romance, relationships", cat:'General English'},
+  {src:'BAS', n:'185', title:"Lilo & Stitch", gram:"Modal Verb (Should)", voc:"Movie Genres", cat:'Series/Movies'},
+  {src:'BAS', n:'191', title:"Happy Father's Day", gram:"—", voc:"Father’s Day", cat:'General English'},
+  {src:'BAS', n:'192', title:"Coloring Books With Me", gram:"—", voc:"Coloring tools and colors", cat:'General English'},
+  {src:'BAS', n:'193', title:"Changes - Black Sabath / Ozzy Osbourne", gram:"Past Simple, Present Simple", voc:"Related to the song", cat:'Songs'},
+  {src:'BAS', n:'194', title:"KPOP Demon Hunters", gram:"Future will", voc:"K-pop group roles", cat:'Series/Movies'},
+  {src:'BAS', n:'195', title:"A Delicious Jacket with Cheese & Beans", gram:"Sequencers", voc:"Kitchen items, ingredients", cat:'General English'},
+  {src:'BAS', n:'201', title:"Do you know Studio Ghibli?", gram:"Simple Present – negative sentences", voc:"Fantasy creatures", cat:'Series/Movies'},
+  {src:'BAS', n:'202', title:"Day of the Dead", gram:"—", voc:"Celebrations, family members", cat:'General English'},
+  {src:'BAS', n:'203', title:"A Stormtrooper's Routine", gram:"—", voc:"Daily activities, time expressions", cat:'Series/Movies'},
+  {src:'BAS', n:'204', title:"Isla Bonita by Madonna", gram:"There is / There are", voc:"Nature, places", cat:'Songs'},
+  {src:'BAS', n:'211', title:"Vision Board: Dream It, See It, Do It", gram:"—", voc:"Digital actions, goals", cat:'General English'},
+  {src:'BAS', n:'212', title:"Welcome Class: Motivation to Learn English", gram:"—", voc:"Related to the video", cat:'General English'},
+  {src:'BAS', n:'213', title:"Welcome Class: You already know this!", gram:"—", voc:"Review - sports, food and drinks", cat:'General English'},
+  {src:'BAS', n:'214', title:"Man I Need - Olivia Dean", gram:"Be, have / has, verbs in the present", voc:"Personality, appearance", cat:'Songs'},
+  {src:'BAS', n:'220', title:"What is St Patrick's Day?", gram:"There be (affirmative, negative, question)", voc:"St Patrick’s day related words", cat:'General English'},
+  {src:'BAS', n:'221', title:"The Last Supper (Easter Class)", gram:"—", voc:"Easter traditions", cat:'General English'},
+  {src:'BAS', n:'222', title:"April Fool's Day", gram:"—", voc:"Related to the topic", cat:'General English'},
+];
+
+function buildCatFilters(){
+  const cats=[...new Set(lessons.map(l=>l.cat))].sort();
+  const cr=document.getElementById('catFilters'); if(!cr) return;
+  cr.innerHTML='<button class="fpill on" onclick="setCat(\'ALL\',this)">Todas</button>';
+  cats.forEach(c=>{
+    const b=document.createElement('button'); b.className='fpill'; b.textContent=c;
+    b.onclick=()=>setCat(c,b); cr.appendChild(b);
+  });
+}
+
+function setCat(v,btn){
+  activeCat=v;
+  document.querySelectorAll('#catFilters .fpill').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on'); filterLessons();
+}
+
+function filterLessons(){
+  const q=(document.getElementById('searchInput')?.value||'').toLowerCase();
+  const lv=document.getElementById('levelFilter')?.value||'';
+  const filtered=lessons.filter(l=>{
+    const mCat=activeCat==='ALL'||l.cat===activeCat;
+    const mLv=!lv||l.src===lv;
+    const mQ=!q||(l.title+l.gram+l.voc+l.cat).toLowerCase().includes(q);
+    return mCat&&mLv&&mQ;
+  });
+  const srcTag={BEG:'A0–A1',BAS:'A2',INT:'B1–B2',SC:'SC'};;
+  const cnt=document.getElementById('lessonCount');
+  if(cnt) cnt.textContent=`${filtered.length} aula${filtered.length!==1?'s':''} encontrada${filtered.length!==1?'s':''}`;
+  const grid=document.getElementById('lessonGrid'); grid.innerHTML='';
+  if(!filtered.length){grid.innerHTML='<div class="empty">Nenhuma aula encontrada.</div>';return;}
+  filtered.forEach(l=>{
+    const d=document.createElement('div'); d.className='lesson-card';
+    d.innerHTML=`<div style="display:flex;gap:.3rem;margin-bottom:.4rem">
+<span class="tag tag-src">${SRC_LABEL[l.src]||l.src}</span>
+<span class="tag tag-nivel">${SRC_NIVEL[l.src]||''}</span></div>
+<div class="lesson-num">${l.n!=='—'?'#'+l.n:''}</div>
+<div class="lesson-title">${l.title}</div>
+<div class="lesson-tags">
+${l.gram&&l.gram!=='—'?`<span class="tag tag-gram">${l.gram}</span>`:''}
+${l.voc&&l.voc!=='—'?`<span class="tag tag-voc">${l.voc}</span>`:''}
+<span class="tag tag-cat">${l.cat}</span>
+</div>`;
+    grid.appendChild(d);
+  });
+}
+
+// ═══════════════════════════════════════
+// MODAL
+// ═══════════════════════════════════════
+function closeModal(id){ document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open');}));
+
+// ═══════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════
+function toISO(d){if(!d)return'';const p=d.split('/');return p.length===3?`${p[2]}-${p[1].padStart(2,'0')}-${p[0].padStart(2,'0')}`:(d.includes('-')?d:'');}
+function fromISO(d){if(!d)return'';const p=d.split('-');return p.length===3?`${p[2]}/${p[1]}/${p[0]}`:d;}
+
+// ═══════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════
+function init(){
+  loadDB();
+  renderAgenda();
+  buildSemSel('alunosSemSel',onSemChange);
+  renderAlunos();
+  buildCatFilters();
+  filterLessons();
+}
+
+// Check auth on load
+window.addEventListener('load',()=>{
+  if(localStorage.getItem('ll_auth')==='1'){
+    document.getElementById('loginScreen').style.display='none';
+    document.getElementById('app').classList.add('visible');
+    init();
+  }
+});
+</script>
+</body>
+</html>
