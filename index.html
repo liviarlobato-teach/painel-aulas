@@ -2112,7 +2112,7 @@ function filterLessons(){
     const mQ=!q||(l.title+l.gram+l.voc+l.cat).toLowerCase().includes(q);
     return mCat&&mLv&&mQ;
   });
-  const srcTag={BEG:'A0–A1',ELEM:'A1',SHINE:'A2–C2',SC:'SC'};
+  const srcTag={BEG:'A0–A1',BAS:'A2',INT:'B1–B2',SC:'SC'};;
   const cnt=document.getElementById('lessonCount');
   if(cnt) cnt.textContent=`${filtered.length} aula${filtered.length!==1?'s':''} encontrada${filtered.length!==1?'s':''}`;
   const grid=document.getElementById('lessonGrid'); grid.innerHTML='';
