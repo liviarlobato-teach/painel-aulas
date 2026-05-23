@@ -1271,13 +1271,25 @@ async function loadDB() {
     const snap = await rtdb.ref(DB_PATH).get();
     if (snap.exists()) {
       db = snap.val();
+      // Firebase converte arrays em objetos — restaurar
+      if (db.semesters && !Array.isArray(db.semesters)) db.semesters = Object.values(db.semesters);
+      if (db.students && !Array.isArray(db.students)) db.students = Object.values(db.students);
+      if (db.records) {
+        Object.keys(db.records).forEach(sid => {
+          const r = db.records[sid];
+          if (r.absences && !Array.isArray(r.absences)) r.absences = Object.values(r.absences);
+          if (r.annotations && !Array.isArray(r.annotations)) r.annotations = Object.values(r.annotations);
+          if (r.history && !Array.isArray(r.history)) r.history = Object.values(r.history);
+        });
+      }
     } else {
       // Firebase vazio — tenta localStorage como fallback
       const raw = localStorage.getItem('liviadb_site_v1');
       if (raw) db = JSON.parse(raw);
     }
   } catch(e) {
-    // Sem internet — usa localStorage
+    console.error('Firebase loadDB erro:', e);
+    // Sem internet ou erro — usa localStorage
     try {
       const raw = localStorage.getItem('liviadb_site_v1');
       if (raw) db = JSON.parse(raw);
@@ -1301,13 +1313,14 @@ async function loadDB() {
 async function saveDB() {
   localStorage.setItem('liviadb_site_v1', JSON.stringify(db));
   if (currentSemId) localStorage.setItem('ll_currentSemId', currentSemId);
+  const el = document.getElementById('saveStatus');
   try {
     await rtdb.ref(DB_PATH).set(db);
+    if (el) { el.textContent = '✓ Salvo'; setTimeout(()=>el.textContent='',2000); }
   } catch(e) {
-    console.warn('Firebase offline, salvo só localmente.');
+    console.error('Firebase saveDB erro:', e);
+    if (el) { el.style.color='var(--red)'; el.textContent = '⚠ Salvo só localmente'; setTimeout(()=>{el.textContent='';el.style.color='';},4000); }
   }
-  const el = document.getElementById('saveStatus');
-  if (el) { el.textContent = '✓ Salvo'; setTimeout(()=>el.textContent='',2000); }
 }
 
 function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
