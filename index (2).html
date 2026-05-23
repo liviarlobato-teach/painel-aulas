@@ -351,36 +351,104 @@ body {
   margin-bottom: 1rem;
 }
 
-/* ───────── AGENDA GRID ───────── */
+/* ───────── AGENDA GRID (time-based) ───────── */
+.week-wrap {
+  overflow-x: auto;
+  overflow-y: auto;
+  max-height: 580px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
 .week-grid {
-  display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  gap: .5rem;
+  display: flex;
+  min-width: 560px;
+}
+
+.time-col {
+  width: 46px;
+  flex-shrink: 0;
+  background: var(--surface2);
+  border-right: 1px solid var(--border);
+  position: relative;
+  padding-top: 36px;
+}
+
+.time-label {
+  position: absolute;
+  right: 6px;
+  font-size: .58rem;
+  color: var(--text3);
+  font-weight: 600;
+  transform: translateY(-50%);
+  white-space: nowrap;
+  line-height: 1;
+}
+
+.days-wrapper {
+  display: flex;
+  flex: 1;
 }
 
 .day-col {
+  flex: 1;
+  position: relative;
+  border-right: 1px solid var(--border);
+  min-width: 80px;
+}
+.day-col:last-child { border-right: none; }
+
+.day-header {
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   background: var(--surface2);
-  border-radius: var(--radius-sm);
-  padding: .75rem .6rem;
-  min-height: 100px;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 3;
 }
 
 .day-name {
-  font-size: .65rem;
+  font-size: .62rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: .08em;
   color: var(--text3);
-  margin-bottom: .6rem;
+}
+
+.day-body {
+  position: relative;
+  height: 840px;
+}
+
+.hour-line {
+  position: absolute;
+  left: 0; right: 0;
+  border-top: 1px solid var(--border);
+  pointer-events: none;
+}
+
+.hour-line-half {
+  position: absolute;
+  left: 0; right: 0;
+  border-top: 1px dashed rgba(0,0,0,.06);
+  pointer-events: none;
 }
 
 .agenda-slot {
+  position: absolute;
+  left: 3px; right: 3px;
   border-radius: 6px;
-  padding: .4rem .5rem;
-  margin-bottom: .35rem;
-  font-size: .72rem;
+  padding: .28rem .4rem;
+  font-size: .68rem;
   font-weight: 600;
-  line-height: 1.35;
+  line-height: 1.3;
+  overflow: hidden;
+  cursor: default;
+  z-index: 1;
+  box-shadow: 0 1px 4px rgba(0,0,0,.10);
 }
 
 /* ───────── STUDENT GRID ───────── */
@@ -879,7 +947,8 @@ textarea { resize: vertical; min-height: 70px; }
   .sidebar.open { transform: translateX(0); }
   .topbar { display: flex; }
   .main { margin-left: 0; padding: 1.25rem 1rem 3rem; }
-  .week-grid { grid-template-columns: repeat(3, 1fr); }
+  .week-wrap { max-height: 500px; }
+  .week-grid { min-width: 480px; }
   .metrics { grid-template-columns: repeat(2, 1fr); }
 }
 </style>
@@ -976,7 +1045,7 @@ textarea { resize: vertical; min-height: 70px; }
         <div class="metrics" id="agMetrics"></div>
         <div class="card">
           <div class="card-title">Esta semana</div>
-          <div class="week-grid" id="weekGrid"></div>
+          <div class="week-wrap"><div class="week-grid" id="weekGrid"></div></div>
         </div>
         <div class="card" style="font-size:.83rem;color:var(--text2)">
           <strong>🕐 Fuso horário:</strong> Adriano e Giuliana estão em Portugal (UTC+1 / verão UTC+2). Confirme o horário a cada mudança de horário de verão.
@@ -1261,23 +1330,84 @@ function renderAgenda() {
     <div class="metric-card"><div class="metric-label">Receita mensal</div><div class="metric-value">R$\u00a0${Math.round(receita).toLocaleString('pt-BR')}</div><div class="metric-sub">aprox. em reais</div></div>
     <div class="metric-card"><div class="metric-label">Pagaram</div><div class="metric-value">${pagos}/${ss.length}</div><div class="metric-sub">${MONTHS[now.getMonth()]}</div></div>`;
 
+  const HOUR_H = 60;
+  const START_H = 8;
+  const END_H = 22;
+
+  function parseMinutes(timeStr) {
+    const parts = timeStr.match(/(\d+):(\d+)/);
+    if (!parts) return null;
+    return (parseInt(parts[1]) - START_H) * 60 + parseInt(parts[2]);
+  }
+
   const grid = document.getElementById('weekGrid'); grid.innerHTML='';
-  DAYS.forEach(day=>{
-    const col=document.createElement('div'); col.className='day-col';
-    col.innerHTML=`<div class="day-name">${day}</div>`;
-    ss.forEach(s=>{
+
+  // Coluna de horas
+  const timeCol = document.createElement('div');
+  timeCol.className = 'time-col';
+  timeCol.style.height = (36 + (END_H - START_H) * HOUR_H) + 'px';
+  for (let h = START_H; h <= END_H; h++) {
+    const lbl = document.createElement('div');
+    lbl.className = 'time-label';
+    lbl.style.top = (36 + (h - START_H) * HOUR_H) + 'px';
+    lbl.textContent = h + 'h';
+    timeCol.appendChild(lbl);
+  }
+  grid.appendChild(timeCol);
+
+  // Colunas dos dias
+  const daysWrap = document.createElement('div');
+  daysWrap.className = 'days-wrapper';
+  grid.appendChild(daysWrap);
+
+  DAYS.forEach(day => {
+    const col = document.createElement('div');
+    col.className = 'day-col';
+
+    const hdr = document.createElement('div');
+    hdr.className = 'day-header';
+    hdr.innerHTML = `<div class="day-name">${day}</div>`;
+    col.appendChild(hdr);
+
+    const body = document.createElement('div');
+    body.className = 'day-body';
+
+    for (let h = 0; h <= (END_H - START_H); h++) {
+      const line = document.createElement('div');
+      line.className = 'hour-line';
+      line.style.top = (h * HOUR_H) + 'px';
+      body.appendChild(line);
+      if (h < (END_H - START_H)) {
+        const half = document.createElement('div');
+        half.className = 'hour-line-half';
+        half.style.top = (h * HOUR_H + 30) + 'px';
+        body.appendChild(half);
+      }
+    }
+
+    ss.forEach(s => {
       (s.horario||'').split('·').map(p=>p.trim()).forEach(p=>{
-        const abbr=p.split(' ')[0].toLowerCase();
-        const map={seg:'segunda',ter:'terça',qua:'quarta',qui:'quinta',sex:'sexta',sáb:'sábado',sab:'sábado'};
-        if(map[abbr]===day.toLowerCase()){
-          const time=p.split(' ').slice(1).join(' ');
-          const c=COLORS[s.colorIdx%8];
-          col.innerHTML+=`<div class="agenda-slot" style="background:${c.bg};color:${c.fg}">${time}<br>${s.nome.split(' ')[0]}</div>`;
+        const abbr = p.split(' ')[0].toLowerCase();
+        const map = {seg:'segunda',ter:'terça',qua:'quarta',qui:'quinta',sex:'sexta',sáb:'sábado',sab:'sábado'};
+        if (map[abbr] === day.toLowerCase()) {
+          const timeStr = p.split(' ').slice(1).join(' ');
+          const mins = parseMinutes(timeStr);
+          if (mins === null) return;
+          const c = COLORS[s.colorIdx%8];
+          const slot = document.createElement('div');
+          slot.className = 'agenda-slot';
+          slot.style.background = c.bg;
+          slot.style.color = c.fg;
+          slot.style.top = mins + 'px';
+          slot.style.height = '50px';
+          slot.innerHTML = `<div style="font-size:.6rem;opacity:.8">${timeStr}</div>${s.nome.split(' ')[0]}`;
+          body.appendChild(slot);
         }
       });
     });
-    if(!col.querySelector('.agenda-slot')) col.innerHTML+=`<div style="font-size:.72rem;color:var(--text3);padding:.35rem 0">Livre</div>`;
-    grid.appendChild(col);
+
+    col.appendChild(body);
+    daysWrap.appendChild(col);
   });
 }
 
