@@ -1086,7 +1086,7 @@ textarea { resize: vertical; min-height: 70px; }
       <div class="page" id="page-planner">
         <div class="page-header">
           <div class="page-title">Planejador de Aula</div>
-          <div class="page-subtitle">IA sugere a próxima aula e gera o plano completo</div>
+          <div class="page-subtitle">IA sugere a próxima aula e gera o plano completo · <button onclick="promptApiKey()" style="background:none;border:none;color:var(--accent);font-size:.82rem;cursor:pointer;padding:0;font-family:var(--font-body)">🔑 Configurar chave da API</button></div>
         </div>
         <div class="card">
           <div class="form-grid">
@@ -1100,12 +1100,6 @@ textarea { resize: vertical; min-height: 70px; }
               <label>Nível</label>
               <select id="plNivel">
                 <option>A0</option><option>A1</option><option selected>A2</option><option>B1</option><option>B2</option>
-              </select>
-            </div>
-            <div class="field">
-              <label>Duração</label>
-              <select id="plDuracao">
-                <option>50 minutos</option><option selected>60 minutos</option><option>75 minutos</option><option>90 minutos</option>
               </select>
             </div>
           </div>
@@ -1411,7 +1405,6 @@ function renderAgenda() {
   document.getElementById('agMetrics').innerHTML = `
     <div class="metric-card"><div class="metric-label">Aulas / semana</div><div class="metric-value">${aulas}</div></div>
     <div class="metric-card"><div class="metric-label">Alunos ativos</div><div class="metric-value">${ss.length}</div></div>
-    <div class="metric-card"><div class="metric-label">Receita mensal</div><div class="metric-value">R$\u00a0${Math.round(receita).toLocaleString('pt-BR')}</div><div class="metric-sub">aprox. em reais</div></div>
     <div class="metric-card"><div class="metric-label">Pagaram</div><div class="metric-value">${pagos}/${ss.length}</div><div class="metric-sub">${MONTHS[now.getMonth()]}</div></div>`;
 
   const HOUR_H = 60;
@@ -1829,9 +1822,35 @@ function setPayment(sid,mk,status,btn){
 }
 
 // ═══════════════════════════════════════
+// ANTHROPIC API KEY
+// ═══════════════════════════════════════
+function getApiKey() {
+  return localStorage.getItem('ll_apikey') || '';
+}
+
+function promptApiKey() {
+  const current = getApiKey();
+  const key = window.prompt(
+    'Cole sua chave da API Anthropic (começa com "sk-ant-").\nEla fica salva só no seu navegador, não vai pro código.',
+    current
+  );
+  if (key && key.trim().startsWith('sk-')) {
+    localStorage.setItem('ll_apikey', key.trim());
+    return key.trim();
+  } else if (key !== null) {
+    alert('Chave inválida. Deve começar com "sk-ant-".');
+  }
+  return null;
+}
+
+function requireApiKey() {
+  const key = getApiKey();
+  if (key) return key;
+  return promptApiKey();
+}
+// ═══════════════════════════════════════
 // PLANEJADOR IA
 // ═══════════════════════════════════════
-function buildPlannerAlunos(){
   const sel=document.getElementById('plAluno'); if(!sel) return;
   const prev=sel.value;
   sel.innerHTML='<option value="">— Selecionar aluno —</option>';
@@ -1902,10 +1921,18 @@ ${availText}
 Analise o histórico e sugira a próxima aula ideal. Responda SOMENTE em JSON válido, sem texto antes ou depois:
 {"titulo":"título exato da aula sugerida","codigo":"[SRC#numero]","motivo":"1-2 frases explicando por que essa aula agora","proximas":["2ª opção","3ª opção","4ª opção"]}`;
 
+  const apiKey = requireApiKey();
+  if (!apiKey) { btn.textContent='✨ Sugerir próxima aula'; btn.disabled=false; return; }
+
   try{
     const resp=await fetch('https://api.anthropic.com/v1/messages',{
       method:'POST',
-      headers:{'Content-Type':'application/json'},
+      headers:{
+        'Content-Type':'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version':'2023-06-01',
+        'anthropic-dangerous-disable-content-security-policy':'true'
+      },
       body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:400,messages:[{role:'user',content:prompt}]})
     });
     const data=await resp.json();
@@ -1929,7 +1956,6 @@ async function generatePlan(){
   const sid=document.getElementById('plAluno')?.value;
   const nivel=document.getElementById('plNivel')?.value;
   const material=document.getElementById('plMaterial')?.value.trim();
-  const duracao=document.getElementById('plDuracao')?.value;
   const foco=document.getElementById('plFoco')?.value.trim();
   if(!material){alert('Informe o material ou clique em "Sugerir próxima aula".');return;}
   const s=sid?db.students.find(x=>x.id===sid):null;
@@ -1948,7 +1974,6 @@ async function generatePlan(){
 Aluno: ${nomAluno}
 Nível: ${nivel}
 Material/Aula: ${material}
-Duração: ${duracao}
 ${foco?`Contexto: ${foco}`:''}${histContext}
 
 Gere o plano neste formato exato:
@@ -1956,7 +1981,7 @@ Gere o plano neste formato exato:
 🎯 OBJETIVO DA AULA
 [1-2 frases claras do que o aluno vai aprender]
 
-📋 ESTRUTURA (${duracao})
+📋 ESTRUTURA DA AULA
 [Divida em blocos com tempo: Warm-up, Apresentação, Prática, Produção, Wrap-up]
 
 💬 VOCABULÁRIO-CHAVE
@@ -1975,6 +2000,8 @@ Responda em português. Seja específico e adequado ao nível ${nivel}.`;
 
   const btn=document.getElementById('plBtn');
   const copyBtn=document.getElementById('plCopyBtn');
+  const apiKey = requireApiKey();
+  if (!apiKey) return;
   btn.textContent='⏳ Gerando...'; btn.disabled=true;
   copyBtn.style.display='none';
   document.getElementById('plResult').style.display='block';
@@ -1983,7 +2010,12 @@ Responda em português. Seja específico e adequado ao nível ${nivel}.`;
   try{
     const resp=await fetch('https://api.anthropic.com/v1/messages',{
       method:'POST',
-      headers:{'Content-Type':'application/json'},
+      headers:{
+        'Content-Type':'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version':'2023-06-01',
+        'anthropic-dangerous-disable-content-security-policy':'true'
+      },
       body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:prompt}]})
     });
     const data=await resp.json();
