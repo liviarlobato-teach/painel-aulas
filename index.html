@@ -1937,8 +1937,11 @@ Analise o histórico e sugira a próxima aula ideal. Responda SOMENTE em JSON v�
       body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:400,messages:[{role:'user',content:prompt}]})
     });
     const data=await resp.json();
-    const raw=data.content?.map(c=>c.text||'').join('')||'';
-    const json=JSON.parse(raw.replace(/```json|```/g,'').trim());
+   if(data.error) throw new Error(data.error.message);
+   const raw=data.content?.map(c=>c.text||'').join('')||'';
+   const match=raw.match(/\{[\s\S]*\}/);
+   if(!match) throw new Error('Resposta inesperada da IA');
+   const json=JSON.parse(match[0]);
     document.getElementById('plMaterial').value=json.titulo||'';
     const box=document.getElementById('plSuggestBox');
     document.getElementById('plSuggestText').innerHTML=
@@ -1947,7 +1950,7 @@ Analise o histórico e sugira a próxima aula ideal. Responda SOMENTE em JSON v�
       (json.proximas?.length?`<br><span style="font-size:.75rem;color:var(--text3)">Próximas: ${json.proximas.join(' → ')}</span>`:'');
     box.style.display='block';
   }catch(e){
-    document.getElementById('plSuggestText').innerHTML='<strong>⚠ Não foi possível sugerir.</strong> Digite o material manualmente.';
+    document.getElementById('plSuggestText').innerHTML=`<strong>⚠ Erro:</strong> ${e.message}. Verifique a chave da API.`;
     document.getElementById('plSuggestBox').style.display='block';
   }
   btn.textContent='✨ Sugerir próxima aula'; btn.disabled=false;
