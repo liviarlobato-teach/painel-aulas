@@ -1196,6 +1196,9 @@ textarea { resize: vertical; min-height: 70px; }
   </div>
 </div>
 
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+
 <script>
 // ═══════════════════════════════════════
 // CONSTANTS
@@ -1213,6 +1216,22 @@ const COLORS = [
   {bg:'#CECBF6',fg:'#3C3489'},{bg:'#D0EAD0',fg:'#1A5C1A'},
   {bg:'#FDE8C8',fg:'#7A3D00'},{bg:'#E8D5F5',fg:'#5B2D8E'},
 ];
+
+// ═══════════════════════════════════════
+// FIREBASE
+// ═══════════════════════════════════════
+const firebaseConfig = {
+  apiKey: "AIzaSyAaHWFqKZHFR_7H9MHUuhxUVI7LG6zM5UQ",
+  authDomain: "liviarlobato-teach.firebaseapp.com",
+  databaseURL: "https://liviarlobato-teach-default-rtdb.firebaseio.com",
+  projectId: "liviarlobato-teach",
+  storageBucket: "liviarlobato-teach.firebasestorage.app",
+  messagingSenderId: "305576536111",
+  appId: "1:305576536111:web:fe67225cc1fd9235937eda"
+};
+firebase.initializeApp(firebaseConfig);
+const rtdb = firebase.database();
+const DB_PATH = 'livia/db';
 
 const SRC_LABEL = {BEG:'Beginner (A0–A1)',BAS:'Basic (A2)',INT:'Intermediate (B1–B2)',SC:'Speaking Club'};
 const SRC_NIVEL = {BEG:'A0-A1',BASIC:'A2',INT:'B1-B2',SC:'SC'};
@@ -1247,11 +1266,23 @@ let currentSemId = null;
 let editingAlunoId = null;
 let selectedColor = 0;
 
-function loadDB() {
+async function loadDB() {
   try {
-    const raw = localStorage.getItem('liviadb_site_v1');
-    if (raw) db = JSON.parse(raw);
-  } catch(e) {}
+    const snap = await rtdb.ref(DB_PATH).get();
+    if (snap.exists()) {
+      db = snap.val();
+    } else {
+      // Firebase vazio — tenta localStorage como fallback
+      const raw = localStorage.getItem('liviadb_site_v1');
+      if (raw) db = JSON.parse(raw);
+    }
+  } catch(e) {
+    // Sem internet — usa localStorage
+    try {
+      const raw = localStorage.getItem('liviadb_site_v1');
+      if (raw) db = JSON.parse(raw);
+    } catch(e2) {}
+  }
   if (!db.semesters) db.semesters = [];
   if (!db.students) db.students = [];
   if (!db.records) db.records = {};
@@ -1264,12 +1295,17 @@ function loadDB() {
   const savedSemId = localStorage.getItem('ll_currentSemId');
   const validSem = db.semesters.find(s => s.id === savedSemId);
   currentSemId = validSem ? validSem.id : db.semesters[0].id;
-  saveDB();
+  await saveDB();
 }
 
-function saveDB() {
+async function saveDB() {
   localStorage.setItem('liviadb_site_v1', JSON.stringify(db));
   if (currentSemId) localStorage.setItem('ll_currentSemId', currentSemId);
+  try {
+    await rtdb.ref(DB_PATH).set(db);
+  } catch(e) {
+    console.warn('Firebase offline, salvo só localmente.');
+  }
   const el = document.getElementById('saveStatus');
   if (el) { el.textContent = '✓ Salvo'; setTimeout(()=>el.textContent='',2000); }
 }
@@ -2313,8 +2349,10 @@ function fromISO(d){if(!d)return'';const p=d.split('-');return p.length===3?`${p
 // ═══════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════
-function init(){
-  loadDB();
+async function init(){
+  const el = document.getElementById('saveStatus');
+  if (el) el.textContent = '⏳ Carregando...';
+  await loadDB();
   renderAgenda();
   buildSemSel('alunosSemSel',onSemChange);
   renderAlunos();
