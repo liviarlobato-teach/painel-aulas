@@ -1099,7 +1099,7 @@ textarea { resize: vertical; min-height: 70px; }
             <div class="field">
               <label>Nível</label>
               <select id="plNivel">
-                <option>A1</option><option selected>A2</option><option>B1</option><option>B2</option>
+                <option>A0</option><option>A1</option><option selected>A2</option><option>B1</option><option>B2</option>
               </select>
             </div>
           </div>
@@ -1116,21 +1116,12 @@ textarea { resize: vertical; min-height: 70px; }
           </div>
 
           <div class="field">
-            <label>Material / Aula <span style="font-size:.68rem;color:var(--text3);font-weight:400">(sugerido pela IA ou edite)</span></label>
-            <input type="text" id="plMaterial" placeholder="Clique em Sugerir ou digite manualmente">
-          </div>
-          <div class="field">
-            <label>Contexto extra (opcional)</label>
-            <input type="text" id="plFoco" placeholder="Ex: focar em produção oral, revisar past simple...">
+            <label>Material / Aula <span style="font-size:.68rem;color:var(--text3);font-weight:400">(sugerido pela IA)</span></label>
+            <input type="text" id="plMaterial" placeholder="Clique em Sugerir próxima aula" readonly style="background:var(--surface2);cursor:default">
           </div>
           <div style="display:flex;gap:.5rem;margin-top:.5rem;flex-wrap:wrap">
-            <button class="btn btn-outline" onclick="suggestLesson()" id="plSuggestBtn" style="display:none">✨ Sugerir próxima aula</button>
-            <button class="btn btn-accent" onclick="generatePlan()" id="plBtn">✦ Gerar plano de aula</button>
-            <button class="btn btn-outline btn-sm" id="plCopyBtn" style="display:none" onclick="copyPlan()">Copiar</button>
+            <button class="btn btn-accent" onclick="suggestLesson()" id="plSuggestBtn">✨ Sugerir próxima aula</button>
           </div>
-        </div>
-        <div id="plResult" style="display:none">
-          <div class="planner-output" id="plOutput"></div>
         </div>
       </div>
 
@@ -1144,7 +1135,7 @@ textarea { resize: vertical; min-height: 70px; }
           <input type="text" id="searchInput" placeholder="Buscar..." oninput="filterLessons()" style="flex:1;min-width:180px">
           <select id="levelFilter" onchange="filterLessons()" style="width:auto">
             <option value="">Todos os níveis</option>
-            <option value="BEG">A1 (Beginner)</option>
+            <option value="BEG">A0-A1 (Beginner)</option>
             <option value="BAS">A2 (Basic)</option>
             <option value="INT">B1–B2 (Intermediate)</option>
             <option value="SC">Speaking Club</option>
@@ -1191,7 +1182,7 @@ textarea { resize: vertical; min-height: 70px; }
     <div class="form-grid">
       <div class="field"><label>Nome *</label><input type="text" id="aNome" placeholder="Nome completo"></div>
       <div class="field"><label>Nível</label>
-        <select id="aNivel"><option>A1</option><option selected>A2</option><option>B1</option><option>B2</option><option>C1</option><option>C2</option></select>
+        <select id="aNivel"><option>A0</option><option>A1</option><option selected>A2</option><option>B1</option><option>B2</option><option>C1</option><option>C2</option></select>
       </div>
       <div class="field"><label>Horários</label><input type="text" id="aHorario" placeholder="Seg 18:15 · Qua 18:30"></div>
       <div class="field"><label>Valor mensal</label><input type="text" id="aValor" placeholder="R$ 470 ou €72"></div>
@@ -1262,8 +1253,8 @@ firebase.initializeApp(firebaseConfig);
 const rtdb = firebase.database();
 const DB_PATH = 'livia/db';
 
-const SRC_LABEL = {BEG:'Beginner (A1)',BAS:'Basic (A2)',INT:'Intermediate (B1–B2)',SC:'Speaking Club'};
-const SRC_NIVEL = {BEG:'A1',BASIC:'A2',INT:'B1-B2',SC:'SC'};
+const SRC_LABEL = {BEG:'Beginner (A0–A1)',BAS:'Basic (A2)',INT:'Intermediate (B1–B2)',SC:'Speaking Club'};
+const SRC_NIVEL = {BEG:'A0-A1',BASIC:'A2',INT:'B1-B2',SC:'SC'};
 
 // ═══════════════════════════════════════
 // LOGIN
@@ -1864,17 +1855,14 @@ function buildPlannerAlunos(){
 
 function fillPlannerAluno(){
   const sid=document.getElementById('plAluno')?.value;
-  const suggestBtn=document.getElementById('plSuggestBtn');
   const histBox=document.getElementById('plHistBox');
   const suggestBox=document.getElementById('plSuggestBox');
   document.getElementById('plMaterial').value='';
   suggestBox.style.display='none';
 
-  if(!sid){ suggestBtn.style.display='none'; histBox.style.display='none'; return; }
+  if(!sid){ histBox.style.display='none'; return; }
   const s=db.students.find(x=>x.id===sid); if(!s) return;
   document.getElementById('plNivel').value=s.nivel||'A1';
-  document.getElementById('plFoco').value=s.obs||'';
-  suggestBtn.style.display='inline-block';
 
   // Mostra histórico recente
   ensureRec(sid);
@@ -1889,8 +1877,8 @@ function fillPlannerAluno(){
 
 function getLevelSrc(nivel){
   if(nivel==='A1') return['BEG','SC'];
-  if(nivel==='A2') return['BAS','SC'];
-  return['INT','SC'];
+  if(nivel==='A2') return['BEG','BAS','SC'];
+  return['BEG','BAS','SC'];
 }
 
 async function suggestLesson(){
@@ -1936,8 +1924,11 @@ Analise o histórico e sugira a próxima aula ideal. Responda SOMENTE em JSON v�
       body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:400,messages:[{role:'user',content:prompt}]})
     });
     const data=await resp.json();
+    if(data.error) throw new Error(data.error.message);
     const raw=data.content?.map(c=>c.text||'').join('')||'';
-    const json=JSON.parse(raw.replace(/```json|```/g,'').trim());
+    const match=raw.match(/\{[\s\S]*\}/);
+    if(!match) throw new Error('Resposta inválida da IA');
+    const json=JSON.parse(match[0]);
     document.getElementById('plMaterial').value=json.titulo||'';
     const box=document.getElementById('plSuggestBox');
     document.getElementById('plSuggestText').innerHTML=
@@ -1946,92 +1937,10 @@ Analise o histórico e sugira a próxima aula ideal. Responda SOMENTE em JSON v�
       (json.proximas?.length?`<br><span style="font-size:.75rem;color:var(--text3)">Próximas: ${json.proximas.join(' → ')}</span>`:'');
     box.style.display='block';
   }catch(e){
-    document.getElementById('plSuggestText').innerHTML='<strong>⚠ Não foi possível sugerir.</strong> Digite o material manualmente.';
+    document.getElementById('plSuggestText').innerHTML=`<strong>⚠ Erro:</strong> ${e.message}`;
     document.getElementById('plSuggestBox').style.display='block';
   }
   btn.textContent='✨ Sugerir próxima aula'; btn.disabled=false;
-}
-
-async function generatePlan(){
-  const sid=document.getElementById('plAluno')?.value;
-  const nivel=document.getElementById('plNivel')?.value;
-  const material=document.getElementById('plMaterial')?.value.trim();
-  const foco=document.getElementById('plFoco')?.value.trim();
-  if(!material){alert('Informe o material ou clique em "Sugerir próxima aula".');return;}
-  const s=sid?db.students.find(x=>x.id===sid):null;
-  const nomAluno=s?s.nome:'aluno';
-
-  // Contexto do histórico para enriquecer o plano
-  let histContext='';
-  if(sid){
-    ensureRec(sid);
-    const hist=(db.records[sid].history||[]).slice(0,4);
-    if(hist.length) histContext=`\nÚltimas aulas dadas: ${hist.map(h=>h.lesson).join(', ')}`;
-  }
-
-  const prompt=`Você é uma assistente especializada em planejamento de aulas de inglês. Crie um plano de aula completo e prático.
-
-Aluno: ${nomAluno}
-Nível: ${nivel}
-Material/Aula: ${material}
-${foco?`Contexto: ${foco}`:''}${histContext}
-
-Gere o plano neste formato exato:
-
-🎯 OBJETIVO DA AULA
-[1-2 frases claras do que o aluno vai aprender]
-
-💬 VOCABULÁRIO-CHAVE
-[5-8 palavras ou expressões com tradução]
-
-🗣️ ATIVIDADES DE FALA
-[2-3 atividades práticas de produção oral para o nível]
-
-📝 HOMEWORK
-[1 atividade curta para casa]
-
-💡 DICA PARA A PROFESSORA
-[1 observação específica para este aluno/nível]
-
-Responda em português. Seja específico e adequado ao nível ${nivel}.`;
-
-  const btn=document.getElementById('plBtn');
-  const copyBtn=document.getElementById('plCopyBtn');
-  const apiKey = requireApiKey();
-  if (!apiKey) return;
-  btn.textContent='⏳ Gerando...'; btn.disabled=true;
-  copyBtn.style.display='none';
-  document.getElementById('plResult').style.display='block';
-  document.getElementById('plOutput').textContent='Gerando plano de aula...';
-
-  try{
-    const resp=await fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST',
-      headers:{
-        'Content-Type':'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version':'2023-06-01',
-        'anthropic-dangerous-disable-content-security-policy':'true'
-      },
-      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:prompt}]})
-    });
-    const data=await resp.json();
-    if(data.error) throw new Error(data.error.message);
-    const text=data.content?.map(c=>c.text||'').join('')||'Erro ao gerar plano.';
-    document.getElementById('plOutput').textContent=text;
-    copyBtn.style.display='inline-block';
-  }catch(e){
-    document.getElementById('plOutput').textContent='Erro ao conectar com a IA. Tente novamente.';
-  }
-  btn.textContent='✦ Gerar plano de aula'; btn.disabled=false;
-}
-
-function copyPlan(){
-  const t=document.getElementById('plOutput')?.textContent||'';
-  navigator.clipboard.writeText(t).then(()=>{
-    const b=document.getElementById('plCopyBtn');
-    if(b){b.textContent='Copiado!';setTimeout(()=>b.textContent='Copiar',2000);}
-  });
 }
 
 // ═══════════════════════════════════════
@@ -2513,7 +2422,7 @@ function filterLessons(){
     const mQ=!q||(l.title+l.gram+l.voc+l.cat).toLowerCase().includes(q);
     return mCat&&mLv&&mQ;
   });
-  const srcTag={BEG:'A1',BAS:'A2',INT:'B1–B2',SC:'SC'};;
+  const srcTag={BEG:'A0–A1',BAS:'A2',INT:'B1–B2',SC:'SC'};;
   const cnt=document.getElementById('lessonCount');
   if(cnt) cnt.textContent=`${filtered.length} aula${filtered.length!==1?'s':''} encontrada${filtered.length!==1?'s':''}`;
   const grid=document.getElementById('lessonGrid'); grid.innerHTML='';
