@@ -1926,13 +1926,12 @@ Analise o histórico e sugira a próxima aula ideal. Responda SOMENTE em JSON v�
   if (!apiKey) { btn.textContent='✨ Sugerir próxima aula'; btn.disabled=false; return; }
 
   try{
-    const resp=await fetch('https://api.anthropic.com/v1/messages',{
+    const resp=await fetch('https://anthropic-proxy.liviarlobato.workers.dev/',{
       method:'POST',
       headers:{
         'Content-Type':'application/json',
         'x-api-key': apiKey,
         'anthropic-version':'2023-06-01',
-        'anthropic-dangerous-disable-content-security-policy':'true'
       },
       body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:400,messages:[{role:'user',content:prompt}]})
     });
