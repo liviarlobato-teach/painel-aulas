@@ -1099,7 +1099,7 @@ textarea { resize: vertical; min-height: 70px; }
             <div class="field">
               <label>Nível</label>
               <select id="plNivel">
-                <option>A0</option><option>A1</option><option selected>A2</option><option>B1</option><option>B2</option>
+                <option>A1</option><option selected>A2</option><option>B1</option><option>B2</option>
               </select>
             </div>
           </div>
@@ -1144,7 +1144,7 @@ textarea { resize: vertical; min-height: 70px; }
           <input type="text" id="searchInput" placeholder="Buscar..." oninput="filterLessons()" style="flex:1;min-width:180px">
           <select id="levelFilter" onchange="filterLessons()" style="width:auto">
             <option value="">Todos os níveis</option>
-            <option value="BEG">A0-A1 (Beginner)</option>
+            <option value="BEG">A1 (Beginner)</option>
             <option value="BAS">A2 (Basic)</option>
             <option value="INT">B1–B2 (Intermediate)</option>
             <option value="SC">Speaking Club</option>
@@ -1191,7 +1191,7 @@ textarea { resize: vertical; min-height: 70px; }
     <div class="form-grid">
       <div class="field"><label>Nome *</label><input type="text" id="aNome" placeholder="Nome completo"></div>
       <div class="field"><label>Nível</label>
-        <select id="aNivel"><option>A0</option><option>A1</option><option selected>A2</option><option>B1</option><option>B2</option><option>C1</option><option>C2</option></select>
+        <select id="aNivel"><option>A1</option><option selected>A2</option><option>B1</option><option>B2</option><option>C1</option><option>C2</option></select>
       </div>
       <div class="field"><label>Horários</label><input type="text" id="aHorario" placeholder="Seg 18:15 · Qua 18:30"></div>
       <div class="field"><label>Valor mensal</label><input type="text" id="aValor" placeholder="R$ 470 ou €72"></div>
@@ -1262,8 +1262,8 @@ firebase.initializeApp(firebaseConfig);
 const rtdb = firebase.database();
 const DB_PATH = 'livia/db';
 
-const SRC_LABEL = {BEG:'Beginner (A0–A1)',BAS:'Basic (A2)',INT:'Intermediate (B1–B2)',SC:'Speaking Club'};
-const SRC_NIVEL = {BEG:'A0-A1',BASIC:'A2',INT:'B1-B2',SC:'SC'};
+const SRC_LABEL = {BEG:'Beginner (A1)',BAS:'Basic (A2)',INT:'Intermediate (B1–B2)',SC:'Speaking Club'};
+const SRC_NIVEL = {BEG:'A1',BASIC:'A2',INT:'B1-B2',SC:'SC'};
 
 // ═══════════════════════════════════════
 // LOGIN
@@ -1888,7 +1888,7 @@ function fillPlannerAluno(){
 }
 
 function getLevelSrc(nivel){
-  if(nivel==='A0'||nivel==='A1') return['BEG','SC'];
+  if(nivel==='A1') return['BEG','SC'];
   if(nivel==='A2') return['BAS','SC'];
   return['INT','SC'];
 }
@@ -2516,7 +2516,7 @@ function filterLessons(){
     const mQ=!q||(l.title+l.gram+l.voc+l.cat).toLowerCase().includes(q);
     return mCat&&mLv&&mQ;
   });
-  const srcTag={BEG:'A0–A1',BAS:'A2',INT:'B1–B2',SC:'SC'};;
+  const srcTag={BEG:'A1',BAS:'A2',INT:'B1–B2',SC:'SC'};;
   const cnt=document.getElementById('lessonCount');
   if(cnt) cnt.textContent=`${filtered.length} aula${filtered.length!==1?'s':''} encontrada${filtered.length!==1?'s':''}`;
   const grid=document.getElementById('lessonGrid'); grid.innerHTML='';
