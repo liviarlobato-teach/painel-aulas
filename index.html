@@ -1914,7 +1914,7 @@ Analise o histórico e sugira a próxima aula ideal. Responda seguindo exatament
   if (!apiKey) { btn.textContent='✨ Sugerir próxima aula'; btn.disabled=false; return; }
 
   // CORREÇÃO: Endpoint utilizando a versão v1 estável
-  const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
   
   try{
     const resp=await fetch(url,{
@@ -1926,8 +1926,10 @@ Analise o histórico e sugira a próxima aula ideal. Responda seguindo exatament
         contents: [{
           parts: [{ text: prompt }]
         }],
+        // 2. A CONFIGURAÇÃO tem que ter o "responseMimeType"
         generationConfig: {
-          temperature: 0.3
+          temperature: 0.3,
+          responseMimeType: "application/json"
         }
       })
     });
