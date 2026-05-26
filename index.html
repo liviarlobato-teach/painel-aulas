@@ -1914,8 +1914,8 @@ Analise o histórico e sugira a próxima aula ideal. Responda seguindo exatament
   if (!apiKey) { btn.textContent='✨ Sugerir próxima aula'; btn.disabled=false; return; }
 
   // CORREÇÃO: Endpoint utilizando a versão v1 estável
-  const url = `https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=${apiKey}`;
-
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=${apiKey}`;
+  
   try{
     const resp=await fetch(url,{
       method:'POST',
