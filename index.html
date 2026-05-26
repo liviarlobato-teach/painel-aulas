@@ -1813,7 +1813,7 @@ function setPayment(sid,mk,status,btn){
 }
 
 // ═══════════════════════════════════════
-// ANTHROPIC API KEY
+// GEMINI API KEY
 // ═══════════════════════════════════════
 function getApiKey() {
   return localStorage.getItem('ll_apikey') || '';
@@ -1822,14 +1822,14 @@ function getApiKey() {
 function promptApiKey() {
   const current = getApiKey();
   const key = window.prompt(
-    'Cole sua chave da API Anthropic (começa com "sk-ant-").\nEla fica salva só no seu navegador, não vai pro código.',
+    'Cole sua chave da API do Google Gemini (geralmente começa com "AIzaSy").\nEla fica salva só no seu navegador.',
     current
   );
-  if (key && key.trim().startsWith('sk-')) {
+  if (key && key.trim().startsWith('AIzaSy')) {
     localStorage.setItem('ll_apikey', key.trim());
     return key.trim();
   } else if (key !== null) {
-    alert('Chave inválida. Deve começar com "sk-ant-".');
+    alert('Chave inválida. Chaves do Gemini costumam começar com "AIzaSy".');
   }
   return null;
 }
@@ -1907,27 +1907,39 @@ ${histText}
 AULAS DISPONÍVEIS (ainda não dadas):
 ${availText}
 
-Analise o histórico e sugira a próxima aula ideal. Responda SOMENTE em JSON válido, sem texto antes ou depois:
+Analise o histórico e sugira a próxima aula ideal. Responda seguindo exatamente esta estrutura JSON:
 {"titulo":"título exato da aula sugerida","codigo":"[SRC#numero]","motivo":"1-2 frases explicando por que essa aula agora","proximas":["2ª opção","3ª opção","4ª opção"]}`;
 
   const apiKey = requireApiKey();
   if (!apiKey) { btn.textContent='✨ Sugerir próxima aula'; btn.disabled=false; return; }
 
+  // Alterado para apontar para a API oficial do Gemini (v1beta ou v1)
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+
   try{
-    const resp=await fetch('https://anthropic-proxy.liviarlobato.workers.dev/',{
+    const resp=await fetch(url,{
       method:'POST',
       headers:{
-        'Content-Type':'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version':'2023-06-01',
+        'Content-Type':'application/json'
       },
-      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:400,messages:[{role:'user',content:prompt}]})
+      body:JSON.stringify({
+        contents: [{
+          parts: [{ text: prompt }]
+        }],
+        generationConfig: {
+          responseMimeType: "application/json" // Força o Gemini a responder estritamente em JSON
+        }
+      })
     });
+    
     const data=await resp.json();
     if(data.error) throw new Error(data.error.message);
-    const raw=data.content?.map(c=>c.text||'').join('')||'';
-    const match=raw.match(/\{[\s\S]*\}/);
+    
+    // Extrai o texto da estrutura de resposta do Gemini
+    const raw = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    const match = raw.match(/\{[\s\S]*\}/);
     if(!match) throw new Error('Resposta inválida da IA');
+    
     const json=JSON.parse(match[0]);
     document.getElementById('plMaterial').value=json.titulo||'';
     const box=document.getElementById('plSuggestBox');
@@ -1942,7 +1954,6 @@ Analise o histórico e sugira a próxima aula ideal. Responda SOMENTE em JSON v�
   }
   btn.textContent='✨ Sugerir próxima aula'; btn.disabled=false;
 }
-
 // ═══════════════════════════════════════
 // REGISTRO RÁPIDO (agenda)
 // ═══════════════════════════════════════
