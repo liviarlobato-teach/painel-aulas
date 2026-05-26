@@ -1913,8 +1913,8 @@ Analise o histórico e sugira a próxima aula ideal. Responda seguindo exatament
   const apiKey = requireApiKey();
   if (!apiKey) { btn.textContent='✨ Sugerir próxima aula'; btn.disabled=false; return; }
 
-  // Alterado para apontar para a API oficial do Gemini (v1beta ou v1)
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+  // CORREÇÃO: Endpoint utilizando a versão v1 estável
+  const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
 
   try{
     const resp=await fetch(url,{
@@ -1927,7 +1927,7 @@ Analise o histórico e sugira a próxima aula ideal. Responda seguindo exatament
           parts: [{ text: prompt }]
         }],
         generationConfig: {
-          responseMimeType: "application/json" // Força o Gemini a responder estritamente em JSON
+          responseMimeType: "application/json" // Força o Gemini a responder estritamente em formato JSON
         }
       })
     });
@@ -1935,7 +1935,7 @@ Analise o histórico e sugira a próxima aula ideal. Responda seguindo exatament
     const data=await resp.json();
     if(data.error) throw new Error(data.error.message);
     
-    // Extrai o texto da estrutura de resposta do Gemini
+    // CORREÇÃO: Extração correta do texto na árvore de objetos do Gemini API
     const raw = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
     const match = raw.match(/\{[\s\S]*\}/);
     if(!match) throw new Error('Resposta inválida da IA');
