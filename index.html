@@ -41,6 +41,34 @@
 }
 
 html { font-size: 15px; }
+
+/* ───────── DARK MODE ───────── */
+html.dark {
+  --bg: #0F0E0D;
+  --surface: #1C1A18;
+  --surface2: #252220;
+  --border: #2E2B28;
+  --border2: #3D3935;
+  --text: #F0EDE8;
+  --text2: #A89F97;
+  --text3: #6E6660;
+  --accent: #D4904A;
+  --accent2: #E8A85A;
+  --accent-bg: #2A1F12;
+  --green: #4A9B6F;
+  --green-bg: #0F2018;
+  --red: #C85555;
+  --red-bg: #220F0F;
+  --yellow: #B8882A;
+  --yellow-bg: #221A08;
+  --blue: #4A7EC0;
+  --blue-bg: #0D1826;
+  --purple: #8A6DB8;
+  --purple-bg: #180F2A;
+  --shadow: 0 2px 12px rgba(0,0,0,.25);
+  --shadow-md: 0 4px 24px rgba(0,0,0,.40);
+}
+
 body {
   font-family: var(--font-body);
   background: var(--bg);
@@ -224,6 +252,23 @@ body {
   padding: 1.25rem 1.5rem 0;
   border-top: 1px solid rgba(255,255,255,.08);
 }
+
+.btn-darkmode {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  font-size: .8rem;
+  color: rgba(255,255,255,.35);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: .5rem 0;
+  font-family: var(--font-body);
+  transition: color .15s;
+  width: 100%;
+  margin-bottom: .35rem;
+}
+.btn-darkmode:hover { color: rgba(255,255,255,.65); }
 
 .btn-logout {
   display: flex;
@@ -1031,6 +1076,10 @@ textarea { resize: vertical; min-height: 70px; }
       </button>
 
       <div class="sidebar-footer">
+        <button class="btn-darkmode" onclick="toggleDark()" id="darkBtn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+          <span id="darkLabel">Modo escuro</span>
+        </button>
         <button class="btn-logout" onclick="logout()">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
           Sair
@@ -1255,6 +1304,28 @@ const DB_PATH = 'livia/db';
 
 const SRC_LABEL = {BEG:'Beginner (A0–A1)',BAS:'Basic (A2)',INT:'Intermediate (B1–B2)',SC:'Speaking Club'};
 const SRC_NIVEL = {BEG:'A0-A1',BASIC:'A2',INT:'B1-B2',SC:'SC'};
+
+// ═══════════════════════════════════════
+// DARK MODE
+// ═══════════════════════════════════════
+function toggleDark() {
+  const isDark = document.documentElement.classList.toggle('dark');
+  localStorage.setItem('ll_dark', isDark ? '1' : '0');
+  updateDarkBtn(isDark);
+}
+
+function updateDarkBtn(isDark) {
+  const label = document.getElementById('darkLabel');
+  const svg = document.querySelector('#darkBtn svg');
+  if (!label) return;
+  if (isDark) {
+    label.textContent = 'Modo claro';
+    svg.innerHTML = '<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>';
+  } else {
+    label.textContent = 'Modo escuro';
+    svg.innerHTML = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>';
+  }
+}
 
 // ═══════════════════════════════════════
 // LOGIN
@@ -1914,8 +1985,8 @@ Analise o histórico e sugira a próxima aula ideal. Responda seguindo exatament
   if (!apiKey) { btn.textContent='✨ Sugerir próxima aula'; btn.disabled=false; return; }
 
   // CORREÇÃO: Endpoint utilizando a versão v1 estável
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
-  
+  const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+
   try{
     const resp=await fetch(url,{
       method:'POST',
@@ -1926,10 +1997,8 @@ Analise o histórico e sugira a próxima aula ideal. Responda seguindo exatament
         contents: [{
           parts: [{ text: prompt }]
         }],
-        // 2. A CONFIGURAÇÃO tem que ter o "responseMimeType"
         generationConfig: {
-          temperature: 0.3,
-          responseMimeType: "application/json"
+          temperature: 0.3
         }
       })
     });
@@ -2484,6 +2553,10 @@ async function init(){
 
 // Check auth on load
 window.addEventListener('load',()=>{
+  if(localStorage.getItem('ll_dark')==='1'){
+    document.documentElement.classList.add('dark');
+    updateDarkBtn(true);
+  }
   if(localStorage.getItem('ll_auth')==='1'){
     document.getElementById('loginScreen').style.display='none';
     document.getElementById('app').classList.add('visible');
