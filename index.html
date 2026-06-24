@@ -850,6 +850,36 @@ textarea { resize: vertical; min-height: 70px; }
 .tag-src { background: var(--surface2); color: var(--text2); }
 .tag-nivel { background: var(--purple-bg); color: var(--purple); }
 
+/* ───────── SYLLABUS ───────── */
+.syl-item {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  padding: .65rem .75rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  margin-bottom: .35rem;
+  background: var(--surface);
+  transition: background .15s;
+}
+.syl-item:hover { background: var(--surface2); }
+.syl-done { opacity: .55; }
+.syl-done .syl-title { text-decoration: line-through; }
+.syl-title { font-size: .88rem; font-weight: 600; }
+.syl-meta { font-size: .7rem; color: var(--text3); margin-top: .1rem; }
+
+.syl-pick {
+  padding: .65rem .75rem;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--border);
+  cursor: pointer;
+  background: var(--surface);
+  transition: border-color .15s, background .15s;
+}
+.syl-pick:hover { border-color: var(--accent); background: var(--accent-bg); }
+.syl-pick-added { opacity: .5; cursor: default; }
+.syl-pick-added:hover { border-color: var(--border); background: var(--surface); }
+
 /* ───────── SEMESTRES ───────── */
 .sem-item {
   display: flex;
@@ -1067,9 +1097,9 @@ textarea { resize: vertical; min-height: 70px; }
       </button>
 
       <div class="nav-section-label">Ferramentas</div>
-      <button class="nav-item" onclick="navTo('planner',this)">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-        Planejador IA
+      <button class="nav-item" onclick="navTo('syllabus',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/></svg>
+        Syllabus
       </button>
       <button class="nav-item" onclick="navTo('busca',this)">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
@@ -1137,46 +1167,20 @@ textarea { resize: vertical; min-height: 70px; }
       </div>
 
       <!-- PLANEJADOR -->
-      <div class="page" id="page-planner">
+      <!-- SYLLABUS -->
+      <div class="page" id="page-syllabus">
         <div class="page-header">
-          <div class="page-title">Planejador de Aula</div>
-          <div class="page-subtitle">IA sugere a próxima aula e gera o plano completo · <button onclick="promptApiKey()" style="background:none;border:none;color:var(--accent);font-size:.82rem;cursor:pointer;padding:0;font-family:var(--font-body)">🔑 Configurar chave da API</button></div>
+          <div class="page-title">Syllabus</div>
+          <div class="page-subtitle">Planeje as aulas de cada aluno e marque as já dadas</div>
         </div>
-        <div class="card">
-          <div class="form-grid">
-            <div class="field">
-              <label>Aluno</label>
-              <select id="plAluno" onchange="fillPlannerAluno()">
-                <option value="">— Selecionar —</option>
-              </select>
-            </div>
-            <div class="field">
-              <label>Nível</label>
-              <select id="plNivel">
-                <option>A0</option><option>A1</option><option selected>A2</option><option>B1</option><option>B2</option>
-              </select>
-            </div>
-          </div>
-
-          <!-- Histórico rápido do aluno -->
-          <div id="plHistBox" style="display:none;margin-bottom:.75rem">
-            <div class="card-title" style="margin-bottom:.4rem">Últimas aulas dadas</div>
-            <div id="plHistList" style="font-size:.8rem;color:var(--text2);line-height:1.8"></div>
-          </div>
-
-          <!-- Sugestão da IA -->
-          <div id="plSuggestBox" style="display:none;margin-bottom:.75rem">
-            <div class="note-box" id="plSuggestText" style="background:var(--accent-bg);border-color:var(--accent)"></div>
-          </div>
-
-          <div class="field">
-            <label>Material / Aula <span style="font-size:.68rem;color:var(--text3);font-weight:400">(sugerido pela IA)</span></label>
-            <input type="text" id="plMaterial" placeholder="Clique em Sugerir próxima aula" readonly style="background:var(--surface2);cursor:default">
-          </div>
-          <div style="display:flex;gap:.5rem;margin-top:.5rem;flex-wrap:wrap">
-            <button class="btn btn-accent" onclick="suggestLesson()" id="plSuggestBtn">✨ Sugerir próxima aula</button>
-          </div>
+        <div class="top-bar">
+          <select id="sylAluno" onchange="renderSyllabus()">
+            <option value="">— Selecionar aluno —</option>
+          </select>
+          <button class="btn btn-accent" onclick="openAddSyllabusLesson()" id="sylAddBtn" style="display:none">+ Adicionar aula</button>
+          <span class="save-status" id="sylStatus"></span>
         </div>
+        <div id="sylContent"></div>
       </div>
 
       <!-- BUSCA WEHELPYOU -->
@@ -1210,6 +1214,26 @@ textarea { resize: vertical; min-height: 70px; }
       </div>
 
     </main>
+  </div>
+</div>
+
+<!-- MODAL SYLLABUS -->
+<div class="modal-overlay" id="modalSyllabus">
+  <div class="modal" style="width:min(640px,100%)">
+    <div class="modal-title" id="sylModalTitle">Adicionar ao syllabus</div>
+    <div style="display:flex;gap:.5rem;margin-bottom:.75rem;flex-wrap:wrap">
+      <input type="text" id="sylSearch" placeholder="Buscar aula..." oninput="filterSylLessons()" style="flex:1;min-width:160px">
+      <select id="sylLevelFilter" onchange="filterSylLessons()" style="width:auto">
+        <option value="">Todos os níveis</option>
+        <option value="BEG">A1 (Beginner)</option>
+        <option value="BAS">A2 (Basic)</option>
+        <option value="SC">Speaking Club</option>
+      </select>
+    </div>
+    <div id="sylLessonGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:.5rem;max-height:420px;overflow-y:auto"></div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal('modalSyllabus');renderSyllabus()">Fechar</button>
+    </div>
   </div>
 </div>
 
@@ -1443,7 +1467,7 @@ function navTo(page, btn) {
   if (page==='agenda') renderAgenda();
   if (page==='alunos') { buildSemSel('alunosSemSel',onSemChange); renderAlunos(); }
   if (page==='pagamentos') { buildSemSel('paySemSel',buildPayMonths); buildPayMonths(); }
-  if (page==='planner') buildPlannerAlunos();
+  if (page==='syllabus') { buildSyllabusAlunos(); renderSyllabus(); }
   if (page==='semestres') renderSemestres();
   if (page==='busca') { buildCatFilters(); filterLessons(); }
 }
@@ -1889,147 +1913,135 @@ function setPayment(sid,mk,status,btn){
 }
 
 // ═══════════════════════════════════════
-// GEMINI API KEY
+// SYLLABUS
 // ═══════════════════════════════════════
-function getApiKey() {
-  return localStorage.getItem('ll_apikey') || '';
-}
-
-function promptApiKey() {
-  const current = getApiKey();
-  const key = window.prompt(
-    'Cole sua chave da API do Google Gemini (geralmente começa com "AIzaSy").\nEla fica salva só no seu navegador.',
-    current
-  );
-  if (key && key.trim().startsWith('AIzaSy')) {
-    localStorage.setItem('ll_apikey', key.trim());
-    return key.trim();
-  } else if (key !== null) {
-    alert('Chave inválida. Chaves do Gemini costumam começar com "AIzaSy".');
-  }
-  return null;
-}
-
-function requireApiKey() {
-  const key = getApiKey();
-  if (key) return key;
-  return promptApiKey();
-}
-// ═══════════════════════════════════════
-// PLANEJADOR IA
-// ═══════════════════════════════════════
-function buildPlannerAlunos(){
-  const sel=document.getElementById('plAluno'); if(!sel) return;
-  const prev=sel.value;
-  sel.innerHTML='<option value="">— Selecionar aluno —</option>';
-  db.students.filter(s=>s.semId===currentSemId&&s.ativo).forEach(s=>{
-    const o=document.createElement('option'); o.value=s.id; o.textContent=s.nome;
-    if(s.id===prev) o.selected=true;
+function buildSyllabusAlunos() {
+  const sel = document.getElementById('sylAluno'); if (!sel) return;
+  const prev = sel.value;
+  sel.innerHTML = '<option value="">— Selecionar aluno —</option>';
+  db.students.filter(s => s.semId === currentSemId && s.ativo).forEach(s => {
+    const o = document.createElement('option'); o.value = s.id; o.textContent = s.nome;
+    if (s.id === prev) o.selected = true;
     sel.appendChild(o);
   });
 }
 
-function fillPlannerAluno(){
-  const sid=document.getElementById('plAluno')?.value;
-  const histBox=document.getElementById('plHistBox');
-  const suggestBox=document.getElementById('plSuggestBox');
-  document.getElementById('plMaterial').value='';
-  suggestBox.style.display='none';
+function ensureSyllabus(sid) {
+  if (!db.records[sid]) db.records[sid] = { absences:[], annotations:[], history:[] };
+  if (!db.records[sid].syllabus) db.records[sid].syllabus = [];
+}
 
-  if(!sid){ histBox.style.display='none'; return; }
-  const s=db.students.find(x=>x.id===sid); if(!s) return;
-  document.getElementById('plNivel').value=s.nivel||'A1';
+function renderSyllabus() {
+  const sid = document.getElementById('sylAluno')?.value;
+  const addBtn = document.getElementById('sylAddBtn');
+  const content = document.getElementById('sylContent');
+  if (!sid) { addBtn.style.display='none'; content.innerHTML='<div class="empty">Selecione um aluno para ver o syllabus.</div>'; return; }
+  addBtn.style.display='inline-block';
+  const s = db.students.find(x => x.id === sid); if (!s) return;
+  ensureSyllabus(sid);
+  const syllabus = db.records[sid].syllabus;
+  const done = syllabus.filter(l => l.done).length;
+  const pct = syllabus.length ? Math.round(done / syllabus.length * 100) : 0;
 
-  // Mostra histórico recente
-  ensureRec(sid);
-  const hist=(db.records[sid].history||[]).slice(0,5);
-  if(hist.length){
-    histBox.style.display='block';
-    document.getElementById('plHistList').innerHTML=hist.map(h=>`<span style="color:var(--text3)">${h.date}</span> · ${h.lesson}`).join('<br>');
-  } else {
-    histBox.style.display='none';
+  if (!syllabus.length) {
+    content.innerHTML = `<div class="card"><div class="empty">Nenhuma aula no syllabus ainda.<br>Clique em <strong>+ Adicionar aula</strong> para começar.</div></div>`;
+    return;
   }
+
+  content.innerHTML = `
+    <div class="card" style="margin-bottom:1rem">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.6rem">
+        <div style="font-size:.82rem;color:var(--text2);font-weight:600">${done} de ${syllabus.length} aulas dadas · ${pct}%</div>
+        <button class="btn btn-outline btn-sm" onclick="clearDoneSyllabus('${sid}')">Limpar ✓ feitas</button>
+      </div>
+      <div class="progress-bar" style="height:6px"><div class="progress-fill" style="width:${pct}%;background:var(--accent)"></div></div>
+    </div>
+    <div class="card" style="padding:.5rem">
+      ${syllabus.map((l, i) => `
+        <div class="syl-item ${l.done ? 'syl-done' : ''}">
+          <label style="display:flex;align-items:center;gap:.75rem;cursor:pointer;flex:1">
+            <input type="checkbox" ${l.done ? 'checked' : ''} onchange="toggleSyllabusItem('${sid}',${i},this.checked)"
+              style="width:16px;height:16px;accent-color:var(--accent);cursor:pointer;flex-shrink:0">
+            <div>
+              <div class="syl-title">${l.title}</div>
+              ${l.src ? `<div class="syl-meta">${l.src}${l.n ? ' #'+l.n : ''}</div>` : ''}
+            </div>
+          </label>
+          <button class="btn btn-danger btn-xs" onclick="removeSyllabusItem('${sid}',${i})">✕</button>
+        </div>`).join('')}
+    </div>`;
 }
 
-function getLevelSrc(nivel){
-  if(nivel==='A1') return['BEG','SC'];
-  if(nivel==='A2') return['BEG','BAS','SC'];
-  return['BEG','BAS','SC'];
+function toggleSyllabusItem(sid, idx, checked) {
+  ensureSyllabus(sid);
+  db.records[sid].syllabus[idx].done = checked;
+  saveDB(); renderSyllabus();
 }
 
-async function suggestLesson(){
-  const sid=document.getElementById('plAluno')?.value; if(!sid){alert('Selecione um aluno.');return;}
-  const s=db.students.find(x=>x.id===sid); if(!s) return;
-  const btn=document.getElementById('plSuggestBtn');
-  btn.textContent='⏳ Analisando...'; btn.disabled=true;
-
-  ensureRec(sid);
-  const hist=db.records[sid].history||[];
-  const doneTitles=hist.map(h=>h.lesson.toLowerCase());
-  const srcFilter=getLevelSrc(s.nivel);
-  const available=lessons.filter(l=>srcFilter.includes(l.src)&&!doneTitles.some(t=>t.includes(l.title.toLowerCase())));
-
-  const histText=hist.slice(0,8).map(h=>`#${h.n||'?'} ${h.lesson} (${h.date})`).join('\n')||'Nenhuma aula registrada ainda.';
-  const availText=available.slice(0,60).map(l=>`[${l.src}#${l.n}] ${l.title}${l.gram&&l.gram!=='—'?' | Gram: '+l.gram:''}${l.voc&&l.voc!=='—'?' | Voc: '+l.voc:''}`).join('\n');
-
-  const prompt=`Você é uma assistente especializada em ensino de inglês. Sugira a melhor próxima aula para este aluno.
-
-ALUNO: ${s.nome} | Nível: ${s.nivel}
-PERFIL: ${s.obs||'Sem observações'}
-
-HISTÓRICO RECENTE (últimas aulas):
-${histText}
-
-AULAS DISPONÍVEIS (ainda não dadas):
-${availText}
-
-Analise o histórico e sugira a próxima aula ideal. Responda seguindo exatamente esta estrutura JSON:
-{"titulo":"título exato da aula sugerida","codigo":"[SRC#numero]","motivo":"1-2 frases explicando por que essa aula agora","proximas":["2ª opção","3ª opção","4ª opção"]}`;
-
-  const apiKey = requireApiKey();
-  if (!apiKey) { btn.textContent='✨ Sugerir próxima aula'; btn.disabled=false; return; }
-
-  // CORREÇÃO: Endpoint utilizando a versão v1 estável
-  const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
-
-  try{
-    const resp=await fetch(url,{
-      method:'POST',
-      headers:{
-        'Content-Type':'application/json'
-      },
-      body:JSON.stringify({
-        contents: [{
-          parts: [{ text: prompt }]
-        }],
-        generationConfig: {
-          temperature: 0.3
-        }
-      })
-    });
-    
-    const data=await resp.json();
-    if(data.error) throw new Error(data.error.message);
-    
-    // CORREÇÃO: Extração correta do texto na árvore de objetos do Gemini API
-    const raw = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-    const match = raw.match(/\{[\s\S]*\}/);
-    if(!match) throw new Error('Resposta inválida da IA');
-    
-    const json=JSON.parse(match[0]);
-    document.getElementById('plMaterial').value=json.titulo||'';
-    const box=document.getElementById('plSuggestBox');
-    document.getElementById('plSuggestText').innerHTML=
-      `<strong>✨ Sugestão:</strong> ${json.codigo} — <em>${json.titulo}</em><br>`+
-      `<span style="font-size:.8rem">${json.motivo}</span>`+
-      (json.proximas?.length?`<br><span style="font-size:.75rem;color:var(--text3)">Próximas: ${json.proximas.join(' → ')}</span>`:'');
-    box.style.display='block';
-  }catch(e){
-    document.getElementById('plSuggestText').innerHTML=`<strong>⚠ Erro:</strong> ${e.message}`;
-    document.getElementById('plSuggestBox').style.display='block';
-  }
-  btn.textContent='✨ Sugerir próxima aula'; btn.disabled=false;
+function removeSyllabusItem(sid, idx) {
+  ensureSyllabus(sid);
+  db.records[sid].syllabus.splice(idx, 1);
+  saveDB(); renderSyllabus();
 }
+
+function clearDoneSyllabus(sid) {
+  if (!confirm('Remover todas as aulas marcadas como feitas?')) return;
+  ensureSyllabus(sid);
+  db.records[sid].syllabus = db.records[sid].syllabus.filter(l => !l.done);
+  saveDB(); renderSyllabus();
+}
+
+let sylStudentId = null;
+
+function openAddSyllabusLesson() {
+  sylStudentId = document.getElementById('sylAluno')?.value;
+  if (!sylStudentId) return;
+  const s = db.students.find(x => x.id === sylStudentId);
+  document.getElementById('sylModalTitle').textContent = `Adicionar ao syllabus — ${s?.nome.split(' ')[0] || ''}`;
+  document.getElementById('sylSearch').value = '';
+  document.getElementById('sylLevelFilter').value = getSylLevelFilter(s?.nivel);
+  filterSylLessons();
+  document.getElementById('modalSyllabus').classList.add('open');
+}
+
+function getSylLevelFilter(nivel) {
+  if (nivel === 'A0' || nivel === 'A1') return 'BEG';
+  if (nivel === 'A2') return 'BAS';
+  return '';
+}
+
+function filterSylLessons() {
+  const q = (document.getElementById('sylSearch')?.value || '').toLowerCase();
+  const lv = document.getElementById('sylLevelFilter')?.value || '';
+  const sid = sylStudentId;
+  ensureSyllabus(sid);
+  const added = new Set(db.records[sid].syllabus.map(l => l.title.toLowerCase()));
+  const filtered = lessons.filter(l => {
+    const mLv = !lv || l.src === lv;
+    const mQ = !q || (l.title + l.gram + l.voc).toLowerCase().includes(q);
+    return mLv && mQ;
+  });
+  const grid = document.getElementById('sylLessonGrid'); if (!grid) return;
+  grid.innerHTML = filtered.slice(0, 80).map(l => {
+    const isAdded = added.has(l.title.toLowerCase());
+    return `<div class="syl-pick ${isAdded ? 'syl-pick-added' : ''}" onclick="${isAdded ? '' : `addSyllabusLesson('${l.src}','${l.n}','${l.title.replace(/'/g,"\'")}')`}">
+      <div style="font-size:.68rem;color:var(--text3);margin-bottom:.2rem">${SRC_LABEL[l.src]||l.src} #${l.n}</div>
+      <div style="font-size:.82rem;font-weight:600;line-height:1.35">${l.title}</div>
+      ${isAdded ? '<div style="font-size:.65rem;color:var(--green);margin-top:.2rem">✓ já no syllabus</div>' : ''}
+    </div>`;
+  }).join('');
+}
+
+function addSyllabusLesson(src, n, title) {
+  const sid = sylStudentId; if (!sid) return;
+  ensureSyllabus(sid);
+  if (db.records[sid].syllabus.find(l => l.title === title)) return;
+  db.records[sid].syllabus.push({ src, n, title, done: false });
+  saveDB(); filterSylLessons();
+  const el = document.getElementById('sylStatus');
+  if (el) { el.textContent = `✓ "${title}" adicionada`; setTimeout(() => el.textContent = '', 2500); }
+}
+
 // ═══════════════════════════════════════
 // REGISTRO RÁPIDO (agenda)
 // ═══════════════════════════════════════
