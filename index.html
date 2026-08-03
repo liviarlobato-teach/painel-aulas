@@ -1185,9 +1185,12 @@ textarea { resize: vertical; min-height: 70px; }
 
       <!-- BUSCA WEHELPYOU -->
       <div class="page" id="page-busca">
-        <div class="page-header">
-          <div class="page-title">WeHelpYou</div>
-          <div class="page-subtitle">Busque aulas por título, gramática ou vocabulário</div>
+        <div class="page-header" style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:.75rem">
+          <div>
+            <div class="page-title">WeHelpYou</div>
+            <div class="page-subtitle">Busque aulas por título, gramática ou vocabulário</div>
+          </div>
+          <button class="btn btn-accent" onclick="openAddLesson()">+ Nova aula</button>
         </div>
         <div style="display:flex;gap:.5rem;margin-bottom:.75rem;flex-wrap:wrap">
           <input type="text" id="searchInput" placeholder="Buscar..." oninput="filterLessons()" style="flex:1;min-width:180px">
@@ -1249,6 +1252,57 @@ textarea { resize: vertical; min-height: 70px; }
     <div class="modal-actions">
       <button class="btn btn-outline" onclick="closeModal('modalSem')">Cancelar</button>
       <button class="btn btn-accent" onclick="saveSem()">Criar semestre</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL NOVA AULA WEHELPYOU -->
+<div class="modal-overlay" id="modalLesson">
+  <div class="modal">
+    <div class="modal-title" id="modalLessonTitle">Nova aula WeHelpYou</div>
+    <div class="form-grid">
+      <div class="field">
+        <label>Lista / Fonte *</label>
+        <select id="lSrc">
+          <option value="BEG">Beginner (A0–A1)</option>
+          <option value="BAS">Elementary (A1–A2)</option>
+          <option value="INT">Shine (A2–C2)</option>
+          <option value="SC">Speaking Club</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Número da aula</label>
+        <input type="text" id="lNum" placeholder="Ex: 42 ou —">
+      </div>
+    </div>
+    <div class="field">
+      <label>Título *</label>
+      <input type="text" id="lTitle" placeholder="Ex: London vs Paris">
+    </div>
+    <div class="field">
+      <label>Gramática</label>
+      <input type="text" id="lGram" placeholder="Ex: Comparatives and superlatives">
+    </div>
+    <div class="field">
+      <label>Vocabulário</label>
+      <input type="text" id="lVoc" placeholder="Ex: Tourist attractions, numbers">
+    </div>
+    <div class="field">
+      <label>Categoria</label>
+      <select id="lCat">
+        <option>General English</option>
+        <option>Travel English</option>
+        <option>Songs</option>
+        <option>Series/Movies</option>
+        <option>Functional Skills</option>
+        <option>Speaking Club</option>
+        <option>Business English</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal('modalLesson')">Cancelar</button>
+      <button class="btn btn-danger btn-sm" id="btnDeleteLesson" style="display:none" onclick="deleteLesson()">Excluir</button>
+      <button class="btn btn-accent" onclick="saveLesson()">Salvar aula</button>
     </div>
   </div>
 </div>
@@ -2531,6 +2585,84 @@ const lessons=[
   {src:'BAS', n:'222', title:"April Fool's Day", gram:"—", voc:"Related to the topic", cat:'General English'},
 ];
 
+// ═══════════════════════════════════════
+// CUSTOM LESSONS (localStorage)
+// ═══════════════════════════════════════
+let customLessons = [];
+let editingLessonId = null;
+
+function loadCustomLessons(){
+  try {
+    const raw = localStorage.getItem('ll_custom_lessons');
+    if(raw) customLessons = JSON.parse(raw);
+  } catch(e){ customLessons = []; }
+}
+
+function saveCustomLessons(){
+  localStorage.setItem('ll_custom_lessons', JSON.stringify(customLessons));
+}
+
+function openAddLesson(){
+  editingLessonId = null;
+  document.getElementById('modalLessonTitle').textContent = 'Nova aula WeHelpYou';
+  document.getElementById('btnDeleteLesson').style.display = 'none';
+  document.getElementById('lSrc').value = 'BEG';
+  document.getElementById('lNum').value = '';
+  document.getElementById('lTitle').value = '';
+  document.getElementById('lGram').value = '';
+  document.getElementById('lVoc').value = '';
+  document.getElementById('lCat').value = 'General English';
+  document.getElementById('modalLesson').classList.add('open');
+}
+
+function openEditLesson(id){
+  const l = customLessons.find(x=>x._id===id); if(!l) return;
+  editingLessonId = id;
+  document.getElementById('modalLessonTitle').textContent = 'Editar aula';
+  document.getElementById('btnDeleteLesson').style.display = 'inline-block';
+  document.getElementById('lSrc').value = l.src||'BEG';
+  document.getElementById('lNum').value = l.n||'';
+  document.getElementById('lTitle').value = l.title||'';
+  document.getElementById('lGram').value = l.gram||'';
+  document.getElementById('lVoc').value = l.voc||'';
+  document.getElementById('lCat').value = l.cat||'General English';
+  document.getElementById('modalLesson').classList.add('open');
+}
+
+function saveLesson(){
+  const title = document.getElementById('lTitle').value.trim();
+  if(!title){ alert('Título é obrigatório.'); return; }
+  const data = {
+    src: document.getElementById('lSrc').value,
+    n: document.getElementById('lNum').value.trim()||'—',
+    title,
+    gram: document.getElementById('lGram').value.trim()||'—',
+    voc: document.getElementById('lVoc').value.trim()||'—',
+    cat: document.getElementById('lCat').value,
+    _custom: true,
+  };
+  if(editingLessonId){
+    const idx = customLessons.findIndex(x=>x._id===editingLessonId);
+    if(idx>-1) customLessons[idx] = {...data, _id: editingLessonId};
+  } else {
+    data._id = uid();
+    customLessons.push(data);
+  }
+  saveCustomLessons();
+  closeModal('modalLesson');
+  buildCatFilters();
+  filterLessons();
+}
+
+function deleteLesson(){
+  if(!editingLessonId || !confirm('Excluir esta aula?')) return;
+  customLessons = customLessons.filter(x=>x._id!==editingLessonId);
+  saveCustomLessons();
+  closeModal('modalLesson');
+  buildCatFilters();
+  filterLessons();
+}
+
 function buildCatFilters(){
   const cats=[...new Set(lessons.map(l=>l.cat))].sort();
   const cr=document.getElementById('catFilters'); if(!cr) return;
@@ -2550,23 +2682,35 @@ function setCat(v,btn){
 function filterLessons(){
   const q=(document.getElementById('searchInput')?.value||'').toLowerCase();
   const lv=document.getElementById('levelFilter')?.value||'';
-  const filtered=lessons.filter(l=>{
+  const allLessons=[...lessons, ...customLessons];
+  const filtered=allLessons.filter(l=>{
     const mCat=activeCat==='ALL'||l.cat===activeCat;
     const mLv=!lv||l.src===lv;
     const mQ=!q||(l.title+l.gram+l.voc+l.cat).toLowerCase().includes(q);
     return mCat&&mLv&&mQ;
   });
-  const srcTag={BEG:'A0–A1',BAS:'A2',INT:'B1–B2',SC:'SC'};;
   const cnt=document.getElementById('lessonCount');
-  if(cnt) cnt.textContent=`${filtered.length} aula${filtered.length!==1?'s':''} encontrada${filtered.length!==1?'s':''}`;
+  const customCount=customLessons.filter(l=>{
+    const mCat=activeCat==='ALL'||l.cat===activeCat;
+    const mLv=!lv||l.src===lv;
+    const mQ=!q||(l.title+l.gram+l.voc+l.cat).toLowerCase().includes(q);
+    return mCat&&mLv&&mQ;
+  }).length;
+  if(cnt) cnt.textContent=`${filtered.length} aula${filtered.length!==1?'s':''} encontrada${filtered.length!==1?'s':''}${customCount>0?` · ${customCount} personalizada${customCount>1?'s':''}` :''}`;
   const grid=document.getElementById('lessonGrid'); grid.innerHTML='';
   if(!filtered.length){grid.innerHTML='<div class="empty">Nenhuma aula encontrada.</div>';return;}
   filtered.forEach(l=>{
     const d=document.createElement('div'); d.className='lesson-card';
-    d.innerHTML=`<div style="display:flex;gap:.3rem;margin-bottom:.4rem">
-<span class="tag tag-src">${SRC_LABEL[l.src]||l.src}</span>
-<span class="tag tag-nivel">${SRC_NIVEL[l.src]||''}</span></div>
-<div class="lesson-num">${l.n!=='—'?'#'+l.n:''}</div>
+    const isCustom=!!l._custom;
+    d.innerHTML=`<div style="display:flex;gap:.3rem;margin-bottom:.4rem;align-items:center;justify-content:space-between">
+  <div style="display:flex;gap:.3rem">
+    <span class="tag tag-src">${SRC_LABEL[l.src]||l.src}</span>
+    <span class="tag tag-nivel">${SRC_NIVEL[l.src]||''}</span>
+    ${isCustom?'<span class="tag" style="background:var(--accent-bg);color:var(--accent)">✎ Custom</span>':''}
+  </div>
+  ${isCustom?`<button class="btn btn-outline btn-xs" onclick="openEditLesson('${l._id}');event.stopPropagation()" style="padding:2px 8px;font-size:.65rem">Editar</button>`:''}
+</div>
+<div class="lesson-num">${l.n&&l.n!=='—'?'#'+l.n:''}</div>
 <div class="lesson-title">${l.title}</div>
 <div class="lesson-tags">
 ${l.gram&&l.gram!=='—'?`<span class="tag tag-gram">${l.gram}</span>`:''}
@@ -2596,6 +2740,7 @@ async function init(){
   const el = document.getElementById('saveStatus');
   if (el) el.textContent = '⏳ Carregando...';
   await loadDB();
+  loadCustomLessons();
   renderAgenda();
   buildSemSel('alunosSemSel',onSemChange);
   renderAlunos();
