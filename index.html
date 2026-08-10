@@ -1256,10 +1256,54 @@ textarea { resize: vertical; min-height: 70px; }
   </div>
 </div>
 
-<!-- MODAL NOVA AULA WEHELPYOU -->
+<!-- MODAL ALUNO -->
+<div class="modal-overlay" id="modalAluno">
+  <div class="modal">
+    <div class="modal-title" id="modalAlunoTitle">Novo aluno</div>
+    <div class="form-grid">
+      <div class="field"><label>Nome *</label><input type="text" id="aNome" placeholder="Nome completo"></div>
+      <div class="field"><label>Nível</label>
+        <select id="aNivel"><option>A0</option><option>A1</option><option selected>A2</option><option>B1</option><option>B2</option><option>C1</option><option>C2</option></select>
+      </div>
+      <div class="field"><label>Horários</label><input type="text" id="aHorario" placeholder="Seg 18:15 · Qua 18:30"></div>
+      <div class="field"><label>Valor mensal</label><input type="text" id="aValor" placeholder="R$ 470 ou €72"></div>
+      <div class="field"><label>País</label><input type="text" id="aPais" placeholder="Brasil 🇧🇷"></div>
+      <div class="field"><label>Total de aulas</label><input type="number" id="aTotalAulas" placeholder="20" min="1"></div>
+    </div>
+    <div class="field"><label>Observações</label><textarea id="aObs" placeholder="Pontos fortes, dificuldades, contexto..."></textarea></div>
+    <div class="field" style="margin-top:.5rem"><label>Cor</label><div class="colors-grid" id="colorGrid"></div></div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal('modalAluno')">Cancelar</button>
+      <button class="btn btn-danger btn-sm" id="btnDeleteAluno" style="display:none" onclick="deleteAluno()">Excluir</button>
+      <button class="btn btn-accent" onclick="saveAluno()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+
+<!-- MODAL REGISTRO RÁPIDO -->
+<div class="modal-overlay" id="modalQuickLesson">
+  <div class="modal">
+    <div class="modal-title" id="qlTitle">Registrar aula</div>
+    <div class="form-grid">
+      <div class="field"><label>Data</label><input type="date" id="qlDate"></div>
+      <div class="field"><label>Nº da aula</label><input type="number" id="qlNum" min="1"></div>
+    </div>
+    <div class="field"><label>Material / Aula *</label><input type="text" id="qlLesson" placeholder="Ex: Speaking Club - Verbs + Prepositions"></div>
+    <div class="field"><label>Observações</label><textarea id="qlObs" placeholder="Como foi a aula? Pontos de atenção..."></textarea></div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal('modalQuickLesson')">Cancelar</button>
+      <button class="btn btn-accent" onclick="saveQuickLesson()">✓ Registrar aula</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL AULA WEHELPYOU -->
 <div class="modal-overlay" id="modalLesson">
   <div class="modal">
-    <div class="modal-title" id="modalLessonTitle">Nova aula WeHelpYou</div>
+    <div class="modal-title" id="modalLessonTitle">Nova aula</div>
     <div class="form-grid">
       <div class="field">
         <label>Lista / Fonte *</label>
@@ -1302,51 +1346,7 @@ textarea { resize: vertical; min-height: 70px; }
     <div class="modal-actions">
       <button class="btn btn-outline" onclick="closeModal('modalLesson')">Cancelar</button>
       <button class="btn btn-danger btn-sm" id="btnDeleteLesson" style="display:none" onclick="deleteLesson()">Excluir</button>
-      <button class="btn btn-accent" onclick="saveLesson()">Salvar aula</button>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL ALUNO -->
-<div class="modal-overlay" id="modalAluno">
-  <div class="modal">
-    <div class="modal-title" id="modalAlunoTitle">Novo aluno</div>
-    <div class="form-grid">
-      <div class="field"><label>Nome *</label><input type="text" id="aNome" placeholder="Nome completo"></div>
-      <div class="field"><label>Nível</label>
-        <select id="aNivel"><option>A0</option><option>A1</option><option selected>A2</option><option>B1</option><option>B2</option><option>C1</option><option>C2</option></select>
-      </div>
-      <div class="field"><label>Horários</label><input type="text" id="aHorario" placeholder="Seg 18:15 · Qua 18:30"></div>
-      <div class="field"><label>Valor mensal</label><input type="text" id="aValor" placeholder="R$ 470 ou €72"></div>
-      <div class="field"><label>País</label><input type="text" id="aPais" placeholder="Brasil 🇧🇷"></div>
-      <div class="field"><label>Total de aulas</label><input type="number" id="aTotalAulas" placeholder="20" min="1"></div>
-    </div>
-    <div class="field"><label>Observações</label><textarea id="aObs" placeholder="Pontos fortes, dificuldades, contexto..."></textarea></div>
-    <div class="field" style="margin-top:.5rem"><label>Cor</label><div class="colors-grid" id="colorGrid"></div></div>
-    <div class="modal-actions">
-      <button class="btn btn-outline" onclick="closeModal('modalAluno')">Cancelar</button>
-      <button class="btn btn-danger btn-sm" id="btnDeleteAluno" style="display:none" onclick="deleteAluno()">Excluir</button>
-      <button class="btn btn-accent" onclick="saveAluno()">Salvar</button>
-    </div>
-  </div>
-</div>
-
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
-
-<!-- MODAL REGISTRO RÁPIDO -->
-<div class="modal-overlay" id="modalQuickLesson">
-  <div class="modal">
-    <div class="modal-title" id="qlTitle">Registrar aula</div>
-    <div class="form-grid">
-      <div class="field"><label>Data</label><input type="date" id="qlDate"></div>
-      <div class="field"><label>Nº da aula</label><input type="number" id="qlNum" min="1"></div>
-    </div>
-    <div class="field"><label>Material / Aula *</label><input type="text" id="qlLesson" placeholder="Ex: Speaking Club - Verbs + Prepositions"></div>
-    <div class="field"><label>Observações</label><textarea id="qlObs" placeholder="Como foi a aula? Pontos de atenção..."></textarea></div>
-    <div class="modal-actions">
-      <button class="btn btn-outline" onclick="closeModal('modalQuickLesson')">Cancelar</button>
-      <button class="btn btn-accent" onclick="saveQuickLesson()">✓ Registrar aula</button>
+      <button class="btn btn-accent" onclick="saveLesson()">Salvar</button>
     </div>
   </div>
 </div>
@@ -2586,46 +2586,60 @@ const lessons=[
 ];
 
 // ═══════════════════════════════════════
-// CUSTOM LESSONS (localStorage)
+// LESSON EDITING (fixas + custom)
 // ═══════════════════════════════════════
-let customLessons = [];
-let editingLessonId = null;
+let lessonOverrides = {}; // {idx_or_id: {…fields}} stored in localStorage
+let customLessons   = []; // aulas novas adicionadas manualmente
+let editingLessonKey = null; // 'fixed:idx' or 'custom:id'
 
-function loadCustomLessons(){
-  try {
-    const raw = localStorage.getItem('ll_custom_lessons');
-    if(raw) customLessons = JSON.parse(raw);
-  } catch(e){ customLessons = []; }
+function loadLessonEdits(){
+  try { const r=localStorage.getItem('ll_lesson_overrides'); if(r) lessonOverrides=JSON.parse(r); } catch(e){}
+  try { const r=localStorage.getItem('ll_custom_lessons');   if(r) customLessons=JSON.parse(r);   } catch(e){}
 }
 
-function saveCustomLessons(){
-  localStorage.setItem('ll_custom_lessons', JSON.stringify(customLessons));
+function saveLessonEdits(){
+  localStorage.setItem('ll_lesson_overrides', JSON.stringify(lessonOverrides));
+  localStorage.setItem('ll_custom_lessons',   JSON.stringify(customLessons));
+}
+
+function getAllLessons(){
+  // merge fixed lessons with any overrides
+  const fixed = lessons.map((l,i)=>({...l, ...(lessonOverrides[i]||{}), _key:'fixed:'+i, _idx:i}));
+  const custom = customLessons.map(l=>({...l, _key:'custom:'+l._id, _custom:true}));
+  return [...fixed, ...custom];
 }
 
 function openAddLesson(){
-  editingLessonId = null;
-  document.getElementById('modalLessonTitle').textContent = 'Nova aula WeHelpYou';
+  editingLessonKey = null;
+  document.getElementById('modalLessonTitle').textContent = 'Nova aula';
   document.getElementById('btnDeleteLesson').style.display = 'none';
-  document.getElementById('lSrc').value = 'BEG';
-  document.getElementById('lNum').value = '';
+  document.getElementById('lSrc').value  = 'BEG';
+  document.getElementById('lNum').value  = '';
   document.getElementById('lTitle').value = '';
-  document.getElementById('lGram').value = '';
-  document.getElementById('lVoc').value = '';
-  document.getElementById('lCat').value = 'General English';
+  document.getElementById('lGram').value  = '';
+  document.getElementById('lVoc').value   = '';
+  document.getElementById('lCat').value   = 'General English';
   document.getElementById('modalLesson').classList.add('open');
 }
 
-function openEditLesson(id){
-  const l = customLessons.find(x=>x._id===id); if(!l) return;
-  editingLessonId = id;
+function openEditLesson(key){
+  editingLessonKey = key;
+  let l;
+  if(key.startsWith('fixed:')){
+    const idx = parseInt(key.split(':')[1]);
+    l = {...lessons[idx], ...(lessonOverrides[idx]||{})};
+  } else {
+    const id = key.split(':')[1];
+    l = customLessons.find(x=>x._id===id)||{};
+  }
   document.getElementById('modalLessonTitle').textContent = 'Editar aula';
-  document.getElementById('btnDeleteLesson').style.display = 'inline-block';
-  document.getElementById('lSrc').value = l.src||'BEG';
-  document.getElementById('lNum').value = l.n||'';
+  document.getElementById('btnDeleteLesson').style.display = key.startsWith('custom:') ? 'inline-block' : 'none';
+  document.getElementById('lSrc').value   = l.src||'BEG';
+  document.getElementById('lNum').value   = l.n||'';
   document.getElementById('lTitle').value = l.title||'';
-  document.getElementById('lGram').value = l.gram||'';
-  document.getElementById('lVoc').value = l.voc||'';
-  document.getElementById('lCat').value = l.cat||'General English';
+  document.getElementById('lGram').value  = l.gram||'';
+  document.getElementById('lVoc').value   = l.voc||'';
+  document.getElementById('lCat').value   = l.cat||'General English';
   document.getElementById('modalLesson').classList.add('open');
 }
 
@@ -2633,38 +2647,46 @@ function saveLesson(){
   const title = document.getElementById('lTitle').value.trim();
   if(!title){ alert('Título é obrigatório.'); return; }
   const data = {
-    src: document.getElementById('lSrc').value,
-    n: document.getElementById('lNum').value.trim()||'—',
+    src:   document.getElementById('lSrc').value,
+    n:     document.getElementById('lNum').value.trim()||'—',
     title,
-    gram: document.getElementById('lGram').value.trim()||'—',
-    voc: document.getElementById('lVoc').value.trim()||'—',
-    cat: document.getElementById('lCat').value,
-    _custom: true,
+    gram:  document.getElementById('lGram').value.trim()||'—',
+    voc:   document.getElementById('lVoc').value.trim()||'—',
+    cat:   document.getElementById('lCat').value,
   };
-  if(editingLessonId){
-    const idx = customLessons.findIndex(x=>x._id===editingLessonId);
-    if(idx>-1) customLessons[idx] = {...data, _id: editingLessonId};
+  if(!editingLessonKey){
+    // nova aula custom
+    customLessons.push({...data, _id: uid(), _custom: true});
+  } else if(editingLessonKey.startsWith('fixed:')){
+    // sobrescreve campos da aula fixa
+    const idx = parseInt(editingLessonKey.split(':')[1]);
+    lessonOverrides[idx] = data;
   } else {
-    data._id = uid();
-    customLessons.push(data);
+    // edita aula custom existente
+    const id = editingLessonKey.split(':')[1];
+    const idx = customLessons.findIndex(x=>x._id===id);
+    if(idx>-1) customLessons[idx] = {...customLessons[idx], ...data};
   }
-  saveCustomLessons();
+  saveLessonEdits();
   closeModal('modalLesson');
   buildCatFilters();
   filterLessons();
 }
 
 function deleteLesson(){
-  if(!editingLessonId || !confirm('Excluir esta aula?')) return;
-  customLessons = customLessons.filter(x=>x._id!==editingLessonId);
-  saveCustomLessons();
+  if(!editingLessonKey || !editingLessonKey.startsWith('custom:')) return;
+  if(!confirm('Excluir esta aula?')) return;
+  const id = editingLessonKey.split(':')[1];
+  customLessons = customLessons.filter(x=>x._id!==id);
+  saveLessonEdits();
   closeModal('modalLesson');
   buildCatFilters();
   filterLessons();
 }
 
 function buildCatFilters(){
-  const cats=[...new Set(lessons.map(l=>l.cat))].sort();
+  const all = getAllLessons();
+  const cats=[...new Set(all.map(l=>l.cat).filter(Boolean))].sort();
   const cr=document.getElementById('catFilters'); if(!cr) return;
   cr.innerHTML='<button class="fpill on" onclick="setCat(\'ALL\',this)">Todas</button>';
   cats.forEach(c=>{
@@ -2682,40 +2704,43 @@ function setCat(v,btn){
 function filterLessons(){
   const q=(document.getElementById('searchInput')?.value||'').toLowerCase();
   const lv=document.getElementById('levelFilter')?.value||'';
-  const allLessons=[...lessons, ...customLessons];
-  const filtered=allLessons.filter(l=>{
+  const all = getAllLessons();
+  const filtered=all.filter(l=>{
     const mCat=activeCat==='ALL'||l.cat===activeCat;
     const mLv=!lv||l.src===lv;
     const mQ=!q||(l.title+l.gram+l.voc+l.cat).toLowerCase().includes(q);
     return mCat&&mLv&&mQ;
   });
   const cnt=document.getElementById('lessonCount');
-  const customCount=customLessons.filter(l=>{
-    const mCat=activeCat==='ALL'||l.cat===activeCat;
-    const mLv=!lv||l.src===lv;
-    const mQ=!q||(l.title+l.gram+l.voc+l.cat).toLowerCase().includes(q);
-    return mCat&&mLv&&mQ;
-  }).length;
-  if(cnt) cnt.textContent=`${filtered.length} aula${filtered.length!==1?'s':''} encontrada${filtered.length!==1?'s':''}${customCount>0?` · ${customCount} personalizada${customCount>1?'s':''}` :''}`;
+  const editedFixed = Object.keys(lessonOverrides).length;
+  const customCount = customLessons.length;
+  let extra = [];
+  if(editedFixed>0) extra.push(`${editedFixed} editada${editedFixed>1?'s':''}`);
+  if(customCount>0) extra.push(`${customCount} personalizada${customCount>1?'s':''}`);
+  if(cnt) cnt.textContent=`${filtered.length} aula${filtered.length!==1?'s':''} encontrada${filtered.length!==1?'s':''}${extra.length?' · '+extra.join(', '):''}`;
   const grid=document.getElementById('lessonGrid'); grid.innerHTML='';
   if(!filtered.length){grid.innerHTML='<div class="empty">Nenhuma aula encontrada.</div>';return;}
   filtered.forEach(l=>{
     const d=document.createElement('div'); d.className='lesson-card';
-    const isCustom=!!l._custom;
-    d.innerHTML=`<div style="display:flex;gap:.3rem;margin-bottom:.4rem;align-items:center;justify-content:space-between">
-  <div style="display:flex;gap:.3rem">
+    const isCustom  = !!l._custom;
+    const isEdited  = !isCustom && lessonOverrides[l._idx] !== undefined;
+    const key = l._key;
+    d.innerHTML=`
+<div style="display:flex;align-items:center;justify-content:space-between;gap:.35rem;margin-bottom:.4rem;flex-wrap:wrap">
+  <div style="display:flex;gap:.3rem;flex-wrap:wrap">
     <span class="tag tag-src">${SRC_LABEL[l.src]||l.src}</span>
     <span class="tag tag-nivel">${SRC_NIVEL[l.src]||''}</span>
-    ${isCustom?'<span class="tag" style="background:var(--accent-bg);color:var(--accent)">✎ Custom</span>':''}
+    ${isCustom  ? '<span class="tag" style="background:var(--accent-bg);color:var(--accent)">✎ Custom</span>' : ''}
+    ${isEdited  ? '<span class="tag" style="background:var(--purple-bg);color:var(--purple)">✎ Editada</span>' : ''}
   </div>
-  ${isCustom?`<button class="btn btn-outline btn-xs" onclick="openEditLesson('${l._id}');event.stopPropagation()" style="padding:2px 8px;font-size:.65rem">Editar</button>`:''}
+  <button class="btn btn-outline btn-xs" onclick="openEditLesson('${key}');event.stopPropagation()" style="font-size:.65rem;padding:2px 8px">Editar</button>
 </div>
 <div class="lesson-num">${l.n&&l.n!=='—'?'#'+l.n:''}</div>
 <div class="lesson-title">${l.title}</div>
 <div class="lesson-tags">
-${l.gram&&l.gram!=='—'?`<span class="tag tag-gram">${l.gram}</span>`:''}
-${l.voc&&l.voc!=='—'?`<span class="tag tag-voc">${l.voc}</span>`:''}
-<span class="tag tag-cat">${l.cat}</span>
+  ${l.gram&&l.gram!=='—'?`<span class="tag tag-gram">${l.gram}</span>`:''}
+  ${l.voc &&l.voc !=='—'?`<span class="tag tag-voc">${l.voc}</span>`:''}
+  <span class="tag tag-cat">${l.cat}</span>
 </div>`;
     grid.appendChild(d);
   });
@@ -2740,7 +2765,7 @@ async function init(){
   const el = document.getElementById('saveStatus');
   if (el) el.textContent = '⏳ Carregando...';
   await loadDB();
-  loadCustomLessons();
+  loadLessonEdits();
   renderAgenda();
   buildSemSel('alunosSemSel',onSemChange);
   renderAlunos();
