@@ -1287,18 +1287,6 @@ textarea { resize: vertical; min-height: 70px; }
 <div class="modal-overlay" id="modalQuickLesson">
   <div class="modal">
     <div class="modal-title" id="qlTitle">Registrar aula</div>
-    <!-- FALTA -->
-    <div id="qlAbsSection" style="background:var(--red-bg);border:1px solid var(--red);border-radius:var(--radius-sm);padding:.85rem 1rem;margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between;gap:.75rem;flex-wrap:wrap">
-      <div>
-        <div style="font-size:.82rem;font-weight:600;color:var(--red)">Aluno não apareceu?</div>
-        <div style="font-size:.75rem;color:var(--text2);margin-top:.15rem">Registra a falta direto sem precisar preencher os campos abaixo.</div>
-      </div>
-      <div style="display:flex;gap:.4rem;flex-wrap:wrap">
-        <button class="btn btn-sm" style="background:var(--red);color:white" onclick="saveQuickAbsence('falta')">✕ Falta (não avisou)</button>
-        <button class="btn btn-warn btn-sm" onclick="saveQuickAbsence('cancel')">Cancelou (avisou)</button>
-      </div>
-    </div>
-    <div style="font-size:.72rem;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.75rem">— ou registrar aula normalmente —</div>
     <div class="form-grid">
       <div class="field"><label>Data</label><input type="date" id="qlDate"></div>
       <div class="field"><label>Nº da aula</label><input type="number" id="qlNum" min="1"></div>
@@ -2082,17 +2070,29 @@ function filterSylLessons() {
   const sid = sylStudentId;
   ensureSyllabus(sid);
   const added = new Set(db.records[sid].syllabus.map(l => l.title.toLowerCase()));
-  const filtered = lessons.filter(l => {
+  // getAllLessons() inclui fixas + customizadas + editadas
+  const all = getAllLessons();
+  const filtered = all.filter(l => {
     const mLv = !lv || l.src === lv;
-    const mQ = !q || (l.title + l.gram + l.voc).toLowerCase().includes(q);
+    const mQ  = !q  || (l.title + (l.gram||'') + (l.voc||'')).toLowerCase().includes(q);
     return mLv && mQ;
   });
   const grid = document.getElementById('sylLessonGrid'); if (!grid) return;
-  grid.innerHTML = filtered.slice(0, 80).map(l => {
-    const isAdded = added.has(l.title.toLowerCase());
-    return `<div class="syl-pick ${isAdded ? 'syl-pick-added' : ''}" onclick="${isAdded ? '' : `addSyllabusLesson('${l.src}','${l.n}','${l.title.replace(/'/g,"\'")}')`}">
-      <div style="font-size:.68rem;color:var(--text3);margin-bottom:.2rem">${SRC_LABEL[l.src]||l.src} #${l.n}</div>
+  grid.innerHTML = filtered.map(l => {
+    const isAdded  = added.has(l.title.toLowerCase());
+    const isCustom = !!l._custom;
+    const isEdited = !isCustom && lessonOverrides[l._idx] !== undefined;
+    // escapa título para uso em onclick
+    const titleEsc = l.title.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+    return `<div class="syl-pick ${isAdded ? 'syl-pick-added' : ''}"
+      onclick="${isAdded ? '' : `addSyllabusLesson('${l.src}','${l.n}','${titleEsc}')`}">
+      <div style="display:flex;gap:.3rem;flex-wrap:wrap;align-items:center;margin-bottom:.25rem">
+        <span style="font-size:.65rem;color:var(--text3)">${SRC_LABEL[l.src]||l.src}${l.n && l.n!=='—' ? ' #'+l.n : ''}</span>
+        ${isCustom ? '<span style="font-size:.6rem;background:var(--accent-bg);color:var(--accent);padding:1px 5px;border-radius:3px;font-weight:600">Custom</span>' : ''}
+        ${isEdited ? '<span style="font-size:.6rem;background:var(--purple-bg);color:var(--purple);padding:1px 5px;border-radius:3px;font-weight:600">Editada</span>' : ''}
+      </div>
       <div style="font-size:.82rem;font-weight:600;line-height:1.35">${l.title}</div>
+      ${l.gram && l.gram !== '—' ? `<div style="font-size:.68rem;color:var(--text3);margin-top:.15rem">${l.gram}</div>` : ''}
       ${isAdded ? '<div style="font-size:.65rem;color:var(--green);margin-top:.2rem">✓ já no syllabus</div>' : ''}
     </div>`;
   }).join('');
@@ -2142,38 +2142,6 @@ async function saveQuickLesson() {
   await saveDB();
   renderAgenda();
   renderAlunos();
-}
-
-function saveQuickAbsence(type) {
-  const sid = qlStudentId; if (!sid) return;
-  const s = db.students.find(x => x.id === sid); if (!s) return;
-  const dateISO = document.getElementById('qlDate').value;
-  const date = fromISO(dateISO) || fromISO(new Date().toISOString().split('T')[0]);
-  ensureRec(sid);
-  db.records[sid].absences.push({ date, type });
-  closeModal('modalQuickLesson');
-  saveDB();
-  // update badge on student card if visible
-  updateAbsBadge(sid);
-  renderAgenda();
-  renderAlunos();
-  // toast feedback
-  const label = type === 'falta' ? 'Falta registrada' : 'Cancelamento registrado';
-  showToast(`${label} para ${s.nome.split(' ')[0]} · ${date}`);
-}
-
-function showToast(msg) {
-  let t = document.getElementById('toast');
-  if (!t) {
-    t = document.createElement('div');
-    t.id = 'toast';
-    t.style.cssText = 'position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);background:var(--text);color:white;padding:.65rem 1.25rem;border-radius:999px;font-size:.82rem;font-weight:500;z-index:9000;box-shadow:0 4px 20px rgba(0,0,0,.25);transition:opacity .3s;pointer-events:none';
-    document.body.appendChild(t);
-  }
-  t.textContent = msg;
-  t.style.opacity = '1';
-  clearTimeout(t._timer);
-  t._timer = setTimeout(() => t.style.opacity = '0', 2800);
 }
 
 // ═══════════════════════════════════════
