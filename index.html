@@ -1828,22 +1828,67 @@ function addHistory(sid){
 
 function renderHistory(sid){
   ensureRec(sid);
-  const hist=db.records[sid].history||[];
-  const el=document.getElementById('hist-list-'+sid); if(!el) return;
-  if(!hist.length){el.innerHTML='<div class="empty">Nenhuma aula registrada.<br>Use a aba Progresso para adicionar.</div>';return;}
-  el.innerHTML=hist.map((h,i)=>`
-<div class="list-item">
+  const hist = db.records[sid].history || [];
+  const abs  = db.records[sid].absences || [];
+  const el = document.getElementById('hist-list-'+sid); if(!el) return;
+
+  // une aulas e faltas numa lista com tipo
+  const combined = [
+    ...hist.map((h,i) => ({ _type:'aula',   _i:i,   date:h.date, h })),
+    ...abs.map ((a,i) => ({ _type:'absence', _i:i,   date:a.date, a })),
+  ];
+
+  // ordena por data decrescente (mais recente primeiro)
+  combined.sort((x,y) => {
+    const toDate = d => { const p=d.split('/'); return p.length===3?new Date(`${p[2]}-${p[1]}-${p[0]}`):new Date(d||0); };
+    return toDate(y.date) - toDate(x.date);
+  });
+
+  if(!combined.length){
+    el.innerHTML='<div class="empty">Nenhum registro ainda.<br>Use a aba Progresso para adicionar aulas, ou registre faltas pela Agenda.</div>';
+    return;
+  }
+
+  const absColors = { falta:'var(--red)', cancel:'var(--yellow)', reposicao:'var(--green)' };
+  const absIcons  = { falta:'✕', cancel:'○', reposicao:'↩' };
+  const absLabels = { falta:'Falta (não avisou)', cancel:'Cancelou (avisou)', reposicao:'Reposição feita' };
+
+  el.innerHTML = combined.map(entry => {
+    if(entry._type === 'aula'){
+      const h = entry.h; const i = entry._i;
+      return `<div class="list-item">
   <div class="list-item-left">
-    ${h.n?`<div class="list-item-num">Aula #${h.n}</div>`:''}
+    ${h.n ? `<div class="list-item-num">Aula #${h.n}</div>` : ''}
     <div class="list-item-title">${h.lesson}</div>
     <div class="list-item-date">${h.date}</div>
-    ${h.obs?`<div class="list-item-obs">${h.obs}</div>`:''}
+    ${h.obs ? `<div class="list-item-obs">${h.obs}</div>` : ''}
   </div>
   <button class="btn btn-danger btn-xs" onclick="removeHistory('${sid}',${i})">✕</button>
-</div>`).join('');
+</div>`;
+    } else {
+      const a = entry.a; const i = entry._i;
+      const color = absColors[a.type] || 'var(--text3)';
+      const icon  = absIcons[a.type]  || '—';
+      const label = absLabels[a.type] || a.type;
+      return `<div class="list-item" style="border-left:3px solid ${color};opacity:.9">
+  <div class="list-item-left">
+    <div class="list-item-num" style="color:${color}">${icon} ${label}</div>
+    <div class="list-item-date">${a.date}</div>
+  </div>
+  <button class="btn btn-danger btn-xs" onclick="removeAbsenceFromHistory('${sid}',${i})">✕</button>
+</div>`;
+    }
+  }).join('');
 }
 
-function removeHistory(sid,idx){ensureRec(sid);db.records[sid].history.splice(idx,1);saveDB();renderHistory(sid);}
+function removeAbsenceFromHistory(sid, idx){
+  ensureRec(sid);
+  db.records[sid].absences.splice(idx, 1);
+  updateAbsBadge(sid);
+  saveDB();
+  renderHistory(sid);
+  renderAbsences(sid);
+}
 
 // FALTAS
 function absLabel(t){return{falta:'Falta (não avisou)',cancel:'Cancelou (avisou)',reposicao:'Reposição feita'}[t]||t;}
@@ -1869,7 +1914,14 @@ function addAbsence(sid){
   if(!date){alert('Selecione a data.');return;}
   db.records[sid].absences.push({date,type}); updateAbsBadge(sid); renderAbsences(sid); saveDB();
 }
-function removeAbsence(sid,idx){ensureRec(sid);db.records[sid].absences.splice(idx,1);updateAbsBadge(sid);renderAbsences(sid);saveDB();}
+function removeAbsence(sid,idx){
+  ensureRec(sid);
+  db.records[sid].absences.splice(idx,1);
+  updateAbsBadge(sid);
+  renderAbsences(sid);
+  renderHistory(sid);
+  saveDB();
+}
 function updateAbsBadge(sid){
   const f=(db.records[sid]?.absences||[]).filter(a=>a.type==='falta').length;
   const cl=f===0?'badge-green':f<=2?'badge-yellow':'badge-red';
@@ -2070,29 +2122,17 @@ function filterSylLessons() {
   const sid = sylStudentId;
   ensureSyllabus(sid);
   const added = new Set(db.records[sid].syllabus.map(l => l.title.toLowerCase()));
-  // getAllLessons() inclui fixas + customizadas + editadas
-  const all = getAllLessons();
-  const filtered = all.filter(l => {
+  const filtered = lessons.filter(l => {
     const mLv = !lv || l.src === lv;
-    const mQ  = !q  || (l.title + (l.gram||'') + (l.voc||'')).toLowerCase().includes(q);
+    const mQ = !q || (l.title + l.gram + l.voc).toLowerCase().includes(q);
     return mLv && mQ;
   });
   const grid = document.getElementById('sylLessonGrid'); if (!grid) return;
-  grid.innerHTML = filtered.map(l => {
-    const isAdded  = added.has(l.title.toLowerCase());
-    const isCustom = !!l._custom;
-    const isEdited = !isCustom && lessonOverrides[l._idx] !== undefined;
-    // escapa título para uso em onclick
-    const titleEsc = l.title.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
-    return `<div class="syl-pick ${isAdded ? 'syl-pick-added' : ''}"
-      onclick="${isAdded ? '' : `addSyllabusLesson('${l.src}','${l.n}','${titleEsc}')`}">
-      <div style="display:flex;gap:.3rem;flex-wrap:wrap;align-items:center;margin-bottom:.25rem">
-        <span style="font-size:.65rem;color:var(--text3)">${SRC_LABEL[l.src]||l.src}${l.n && l.n!=='—' ? ' #'+l.n : ''}</span>
-        ${isCustom ? '<span style="font-size:.6rem;background:var(--accent-bg);color:var(--accent);padding:1px 5px;border-radius:3px;font-weight:600">Custom</span>' : ''}
-        ${isEdited ? '<span style="font-size:.6rem;background:var(--purple-bg);color:var(--purple);padding:1px 5px;border-radius:3px;font-weight:600">Editada</span>' : ''}
-      </div>
+  grid.innerHTML = filtered.slice(0, 80).map(l => {
+    const isAdded = added.has(l.title.toLowerCase());
+    return `<div class="syl-pick ${isAdded ? 'syl-pick-added' : ''}" onclick="${isAdded ? '' : `addSyllabusLesson('${l.src}','${l.n}','${l.title.replace(/'/g,"\'")}')`}">
+      <div style="font-size:.68rem;color:var(--text3);margin-bottom:.2rem">${SRC_LABEL[l.src]||l.src} #${l.n}</div>
       <div style="font-size:.82rem;font-weight:600;line-height:1.35">${l.title}</div>
-      ${l.gram && l.gram !== '—' ? `<div style="font-size:.68rem;color:var(--text3);margin-top:.15rem">${l.gram}</div>` : ''}
       ${isAdded ? '<div style="font-size:.65rem;color:var(--green);margin-top:.2rem">✓ já no syllabus</div>' : ''}
     </div>`;
   }).join('');
