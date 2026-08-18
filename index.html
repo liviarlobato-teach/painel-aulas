@@ -1287,6 +1287,18 @@ textarea { resize: vertical; min-height: 70px; }
 <div class="modal-overlay" id="modalQuickLesson">
   <div class="modal">
     <div class="modal-title" id="qlTitle">Registrar aula</div>
+
+    <!-- FALTA / CANCELAMENTO -->
+    <div style="background:var(--red-bg);border:1px solid var(--red);border-radius:var(--radius-sm);padding:.85rem 1rem;margin-bottom:1.1rem">
+      <div style="font-size:.8rem;font-weight:600;color:var(--red);margin-bottom:.5rem">Aluno não apareceu?</div>
+      <div style="display:flex;gap:.4rem;flex-wrap:wrap">
+        <button class="btn btn-sm" style="background:var(--red);color:white" onclick="saveQuickAbsence('falta')">✕ Falta (não avisou)</button>
+        <button class="btn btn-warn btn-sm" onclick="saveQuickAbsence('cancel')">Cancelou (avisou)</button>
+      </div>
+    </div>
+
+    <div style="font-size:.7rem;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.75rem">— ou registrar aula normalmente —</div>
+
     <div class="form-grid">
       <div class="field"><label>Data</label><input type="date" id="qlDate"></div>
       <div class="field"><label>Nº da aula</label><input type="number" id="qlNum" min="1"></div>
@@ -2182,6 +2194,41 @@ async function saveQuickLesson() {
   await saveDB();
   renderAgenda();
   renderAlunos();
+}
+
+function saveQuickAbsence(type) {
+  const sid = qlStudentId; if (!sid) return;
+  const s = db.students.find(x => x.id === sid); if (!s) return;
+  const dateISO = document.getElementById('qlDate').value;
+  const date = fromISO(dateISO) || fromISO(new Date().toISOString().split('T')[0]);
+  ensureRec(sid);
+  // nenhum dos dois tipos incrementa o contador — a aula não aconteceu
+  db.records[sid].absences.push({ date, type });
+  closeModal('modalQuickLesson');
+  saveDB();
+  updateAbsBadge(sid);
+  renderAgenda();
+  renderAlunos();
+  const label = type === 'falta' ? 'Falta registrada' : 'Cancelamento registrado';
+  showToast(`${label} · ${s.nome.split(' ')[0]} · ${date}`);
+}
+
+function showToast(msg) {
+  let t = document.getElementById('ll-toast');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'll-toast';
+    t.style.cssText = 'position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%) translateY(8px);background:var(--text);color:white;padding:.6rem 1.2rem;border-radius:999px;font-size:.82rem;font-weight:500;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,.25);opacity:0;transition:opacity .25s,transform .25s;pointer-events:none;white-space:nowrap';
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.style.opacity = '1';
+  t.style.transform = 'translateX(-50%) translateY(0)';
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => {
+    t.style.opacity = '0';
+    t.style.transform = 'translateX(-50%) translateY(8px)';
+  }, 2800);
 }
 
 // ═══════════════════════════════════════
