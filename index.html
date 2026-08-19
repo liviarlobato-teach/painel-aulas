@@ -1463,9 +1463,10 @@ async function loadDB() {
       if (db.records) {
         Object.keys(db.records).forEach(sid => {
           const r = db.records[sid];
-          if (r.absences && !Array.isArray(r.absences)) r.absences = Object.values(r.absences);
+          if (r.absences    && !Array.isArray(r.absences))    r.absences    = Object.values(r.absences);
           if (r.annotations && !Array.isArray(r.annotations)) r.annotations = Object.values(r.annotations);
-          if (r.history && !Array.isArray(r.history)) r.history = Object.values(r.history);
+          if (r.history     && !Array.isArray(r.history))     r.history     = Object.values(r.history);
+          if (r.syllabus    && !Array.isArray(r.syllabus))    r.syllabus    = Object.values(r.syllabus);
         });
       }
     } else {
@@ -1652,8 +1653,11 @@ function renderAgenda() {
 // ALUNOS
 // ═══════════════════════════════════════
 function ensureRec(sid) {
-  if(!db.records[sid]) db.records[sid]={absences:[],annotations:[],history:[]};
-  if(!db.records[sid].history) db.records[sid].history=[];
+  if(!db.records[sid]) db.records[sid]={absences:[],annotations:[],history:[],syllabus:[]};
+  if(!db.records[sid].history)     db.records[sid].history     = [];
+  if(!db.records[sid].absences)    db.records[sid].absences    = [];
+  if(!db.records[sid].annotations) db.records[sid].annotations = [];
+  if(!db.records[sid].syllabus)    db.records[sid].syllabus    = [];
 }
 
 function buildSemSel(elId, cb) {
